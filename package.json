@@ -1,0 +1,23 @@
+{
+  "name": "trmnl-server",
+  "version": "1.0.0",
+  "description": "BYOS (Bring Your Own Server) for TRMNL e-ink displays",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "better-sqlite3": "^11.8.1",
+    "sharp": "^0.33.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0",
+    "@types/express": "^5.0.0",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.0.0"
+  }
+}
