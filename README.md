@@ -21,18 +21,69 @@ The TRMNL device (ESP32 + e-ink) polls this server periodically:
 
 The server renders HTML screens to 800x480 1-bit BMP images suitable for the e-ink display.
 
-## Device Setup
+## Hardware Setup
 
-Point your TRMNL device to this server's IP. If your MacBook is at `192.168.1.100`:
+### Supported Board
 
-1. Flash TRMNL firmware on your ESP32: https://github.com/usetrmnl/firmware
-2. During WiFi setup, set the server URL to `http://192.168.1.100:3000`
-3. The device will auto-register via `/api/setup`
+**ESP32-WROOM-32E** (DevKit) — the TRMNL firmware supports this via the `esp32dev` build target.
+
+### E-Ink Display Wiring (SPI)
+
+| E-Paper Pin | ESP32 Pin |
+|-------------|-----------|
+| DIN / MOSI  | MO        |
+| CLK / SCK   | SCK       |
+| CS          | GPIO 5    |
+| DC          | GPIO 17   |
+| RST         | RST       |
+| BUSY        | GPIO 4    |
+
+> Pin-Belegung kann je nach E-Paper-Modell abweichen. Die genauen GPIOs sind in der Firmware-Config unter dem `esp32dev` Environment definiert.
+
+### Firmware flashen
+
+#### 1. PlatformIO installieren
+
+```bash
+# via Homebrew
+brew install platformio
+
+# oder via pip
+pip install platformio
+```
+
+#### 2. Firmware klonen
+
+```bash
+git clone https://github.com/usetrmnl/firmware.git trmnl-firmware
+cd trmnl-firmware
+```
+
+#### 3. Bauen und flashen
+
+ESP32 per USB anschliessen, dann:
+
+```bash
+pio run -e esp32dev --target upload
+```
+
+Das Target `esp32dev` ist fuer den generischen ESP32 (240MHz, DIO Flash-Mode) — passt zum WROOM-32E.
+
+#### 4. Device konfigurieren
+
+Nach dem Flashen startet der ESP32 im WiFi AP-Modus:
+
+1. Mit dem WLAN `TRMNL-XXXX` verbinden (Handy oder Laptop)
+2. Captive Portal oeffnet sich automatisch
+3. Eigenes WLAN eingeben (SSID + Passwort)
+4. **Server URL** auf die IP des MacBooks setzen, z.B. `http://192.168.1.100:3000`
+5. Der ESP32 startet neu und registriert sich automatisch beim Server via `/api/setup`
 
 ## Admin UI
 
 Open `http://localhost:3000` in your browser to:
 - Create/edit/delete screens (HTML content)
+- Preview screens as 800x480 BMP
 - View registered devices and their telemetry
 - Browse device logs
 
