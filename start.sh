@@ -8,6 +8,9 @@ cd /Users/stakursk/Projects/trmnl-server
 echo "[trmnl] $(date) — pulling latest..."
 git pull --ff-only origin main
 
+echo "[trmnl] $(date) — installing dependencies..."
+/usr/local/bin/npm install --prefer-offline --no-audit
+
 echo "[trmnl] $(date) — building..."
 /usr/local/bin/npm run build
 
