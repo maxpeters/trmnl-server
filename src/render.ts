@@ -188,10 +188,11 @@ export async function renderHtmlToBmp(html: string): Promise<Buffer> {
   });
   const pngBuffer = resvg.render().asPng();
 
-  // Sharp: threshold to 1-bit black/white PNG
+  // Sharp: threshold to 1-bit black/white PNG (bilevel)
   const output = await sharp(pngBuffer)
     .threshold(128)
-    .png()
+    .toColorspace("b-w")
+    .png({ colours: 2, effort: 1 })
     .toBuffer();
 
   return output;

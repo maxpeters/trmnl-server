@@ -109,7 +109,7 @@ app.get("/api/display", async (req, res) => {
   if (screens.length === 0) {
     res.json({
       status: 0,
-      image_url: `http://${req.headers.host}/api/bitmap/empty.bmp`,
+      image_url: `http://${req.headers.host}/api/bitmap/empty.png`,
       filename: "empty.bmp",
       refresh_rate: device?.refresh_rate || 900,
       reset_firmware: false,
@@ -125,7 +125,7 @@ app.get("/api/display", async (req, res) => {
   const screen = screens[screenIndex];
 
   // Generate BMP filename
-  const filename = `${mac.replace(/:/g, "")}_${Date.now()}.bmp`;
+  const filename = `${mac.replace(/:/g, "")}_${Date.now()}.png`;
 
   // Pre-generate and cache the BMP
   try {
