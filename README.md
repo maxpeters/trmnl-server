@@ -6,10 +6,31 @@ Self-hosted server for [TRMNL](https://trmnl.com) e-ink displays, designed to ru
 
 ```bash
 npm install
-npm run dev
+npm run build
+node dist/server.js
 ```
 
 Server starts at `http://localhost:3000`.
+
+## autostart (macOS)
+
+Der Server läuft als LaunchAgent und startet automatisch beim Mac-Login.
+Bei jedem Start wird automatisch `git pull` + `npm run build` gemacht — d.h. einfach pushen und neu starten.
+
+**Server neu starten (z.B. nach einem Push):**
+
+```bash
+launchctl stop com.maxpeters.trmnl-server
+launchctl start com.maxpeters.trmnl-server
+```
+
+**Logs:**
+
+```bash
+tail -f ~/Projects/trmnl-server/trmnl-server.log
+```
+
+**Server-URL im lokalen Netzwerk:** `http://MacBookPro.fritz.box:3000`
 
 ## How it works
 
