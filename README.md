@@ -48,58 +48,48 @@ The server renders HTML screens to 800x480 1-bit BMP images suitable for the e-i
 
 | Komponente | Modell | Details |
 |------------|--------|---------|
-| Microcontroller | **ESP32-WROOM-32E** (DevKit) | 240MHz, WiFi, 4MB Flash |
-| Display | **Waveshare 7.5" E-Paper HAT (B)** | 800x480, 3-Farben (rot/schwarz/weiss), SPI |
+| Microcontroller | **DFRobot Firebeetle ESP32 V1.0** (ESP32-WROOM-32E) | 240MHz, WiFi, 4MB Flash |
+| Display | **Waveshare 7.5" E-Paper HAT (B)** Rev2.2 | 800x480, 3-Farben (rot/schwarz/weiss), SPI |
 | Batterie | **10.000mAh LiPo** | 3.7V |
 | Server | **MacBook** (macOS) | Node.js, lokales Netzwerk |
 
 ### E-Ink Display Wiring (SPI)
 
-Die Pin-Belegung fuer den ESP32-WROOM-32E mit dem Waveshare E-Paper Driver Board:
+Verkabelung vom Waveshare e-Paper Driver HAT Rev2.2 zum DFRobot Firebeetle ESP32:
 
-| E-Paper Pin | ESP32 GPIO |
-|-------------|------------|
-| DIN / MOSI  | GPIO 14    |
-| CLK / SCK   | GPIO 13    |
-| CS          | GPIO 15    |
-| DC          | GPIO 27    |
-| RST         | GPIO 26    |
-| BUSY        | GPIO 25    |
+| HAT Pin | ESP32 Board-Label | ESP32 GPIO |
+|---------|-------------------|------------|
+| VCC     | 3V                | 3.3V       |
+| GND     | GND               | GND        |
+| DIN     | MO (MOSI)         | GPIO 23    |
+| CLK     | SCK               | GPIO 18    |
+| CS      | SDA               | GPIO 21    |
+| DC      | MISO              | GPIO 19    |
+| RST     | SCL               | GPIO 22    |
+| BUSY    | D9                | GPIO 2     |
 
-Diese Pins entsprechen dem `waveshare-esp32-driver` Environment in der TRMNL Firmware (`src/DEV_Config.h`).
+> Diese Pins sind in der TRMNL Firmware unter `src/DEV_Config.h` im `BOARD_WAVESHARE_ESP32_DRIVER` Block konfiguriert. Bei anderem Board muessen die GPIOs dort angepasst werden.
 
-### 3-Farben Display Hinweis
+### 3-Farben Display
 
-Das Waveshare 7.5" (B) ist ein 3-Farben Display (rot/schwarz/weiss). In der TRMNL Firmware wird der passende Treiber `EP75R_800x480` ueber das Build-Flag `BOARD_XIAO_EPAPER_DISPLAY_3CLR` aktiviert. Dieses Flag ist aktuell nur im `TRMNL_7inch5_OG_DIY_Kit_3CLR` Environment (ESP32-S3) konfiguriert.
+Das Waveshare 7.5" (B) ist ein 3-Farben Display (rot/schwarz/weiss). Der passende Treiber `EP75R_800x480` wird ueber das Build-Flag `BOARD_XIAO_EPAPER_DISPLAY_3CLR` aktiviert. Ohne diese Anpassung wird nur schwarz/weiss gerendert.
 
-Fuer unseren ESP32-WROOM-32E muss ein **custom PlatformIO Environment** in `platformio.ini` erstellt werden:
-
-```ini
-[env:custom_esp32_3clr]
-extends = env:esp32_base
-board = esp32dev
-board_build.f_cpu = 240000000L
-board_build.f_flash = 80000000L
-board_build.flash_mode = dio
-build_flags =
-    ${env:esp32_base.build_flags}
-    -D BOARD_WAVESHARE_ESP32_DRIVER
-    -D PNG_MAX_BUFFERED_PIXELS=6432
-```
-
-> TODO: Den Display-Treiber in `src/display.cpp` fuer diese Kombination auf `EP75R_800x480` umstellen, damit der 3-Farben Modus genutzt wird. Ohne Anpassung wird nur schwarz/weiss gerendert.
+> TODO: Display-Treiber in `src/display.cpp` fuer die Kombination ESP32 + 3-Farben Display auf `EP75R_800x480` umstellen.
 
 ## Firmware flashen
 
 ### 1. PlatformIO installieren
 
 ```bash
-# via Homebrew
 brew install platformio
-
-# oder via pip
-pip install platformio
 ```
+
+> Falls `intelhex` Fehler beim Build auftreten:
+> ```bash
+> # PlatformIO Python finden und intelhex dort installieren
+> pio system info  # zeigt Python Executable
+> /pfad/zum/platformio/python -m pip install intelhex
+> ```
 
 ### 2. Firmware klonen
 
@@ -108,27 +98,44 @@ git clone https://github.com/usetrmnl/firmware.git trmnl-firmware
 cd trmnl-firmware
 ```
 
-### 3. Custom Environment anlegen
+### 3. Pin-Mapping anpassen (falls noetig)
 
-Das oben beschriebene `[env:custom_esp32_3clr]` Environment in `platformio.ini` einfuegen.
+Die GPIO-Zuordnung in `src/DEV_Config.h` unter `BOARD_WAVESHARE_ESP32_DRIVER` muss zum eigenen Wiring passen. Siehe Tabelle oben.
 
 ### 4. Bauen und flashen
 
 ESP32 per USB anschliessen, dann:
 
 ```bash
-pio run -e custom_esp32_3clr --target upload
+pio run -e waveshare-esp32-driver --target upload
 ```
 
-### 5. Device konfigurieren
+### 5. Flash komplett loeschen (bei Problemen)
+
+Falls der ESP32 alte WiFi-Credentials behaelt oder sich mit der TRMNL Cloud statt dem lokalen Server verbindet:
+
+```bash
+esptool.py --port /dev/cu.wchusbserial110 erase_flash
+pio run -e waveshare-esp32-driver --target upload
+```
+
+### 6. Device konfigurieren
 
 Nach dem Flashen startet der ESP32 im WiFi AP-Modus:
 
-1. Mit dem WLAN `TRMNL-XXXX` verbinden (Handy oder Laptop)
+1. Mit dem WLAN des ESP32 verbinden (Handy oder Laptop)
 2. Captive Portal oeffnet sich automatisch
 3. Eigenes WLAN eingeben (SSID + Passwort)
-4. **Server URL** auf die IP des MacBooks setzen, z.B. `http://192.168.1.100:3000`
+4. **Server URL** eingeben: `http://macbookpro.fritz.box:3000`
 5. Der ESP32 startet neu und registriert sich automatisch beim Server via `/api/setup`
+
+### Serial Monitor
+
+Zum Debuggen:
+
+```bash
+pio device monitor -e waveshare-esp32-driver
+```
 
 ## Admin UI
 
