@@ -24,7 +24,7 @@ export async function renderHtmlToBmp(html: string): Promise<Buffer> {
   const bmp = await sharp(Buffer.from(svg))
     .resize(WIDTH, HEIGHT)
     .threshold(128) // convert to 1-bit black/white
-    .toFormat("bmp") // BMP output
+    .toFormat("bmp" as keyof sharp.FormatEnum) // BMP output
     .toBuffer();
 
   return bmp;

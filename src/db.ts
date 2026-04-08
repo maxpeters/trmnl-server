@@ -1,4 +1,4 @@
-import Database from "better-sqlite3";
+import Database, { type Database as DatabaseType } from "better-sqlite3";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -57,4 +57,4 @@ if (count.c === 0) {
   );
 }
 
-export default db;
+export default db as DatabaseType;
