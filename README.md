@@ -21,28 +21,56 @@ The TRMNL device (ESP32 + e-ink) polls this server periodically:
 
 The server renders HTML screens to 800x480 1-bit BMP images suitable for the e-ink display.
 
-## Hardware Setup
+## Hardware
 
-### Supported Board
+### Unsere Komponenten
 
-**ESP32-WROOM-32E** (DevKit) — the TRMNL firmware supports this via the `esp32dev` build target.
+| Komponente | Modell | Details |
+|------------|--------|---------|
+| Microcontroller | **ESP32-WROOM-32E** (DevKit) | 240MHz, WiFi, 4MB Flash |
+| Display | **Waveshare 7.5" E-Paper HAT (B)** | 800x480, 3-Farben (rot/schwarz/weiss), SPI |
+| Batterie | **10.000mAh LiPo** | 3.7V |
+| Server | **MacBook** (macOS) | Node.js, lokales Netzwerk |
 
 ### E-Ink Display Wiring (SPI)
 
-| E-Paper Pin | ESP32 Pin |
-|-------------|-----------|
-| DIN / MOSI  | MO        |
-| CLK / SCK   | SCK       |
-| CS          | GPIO 5    |
-| DC          | GPIO 17   |
-| RST         | RST       |
-| BUSY        | GPIO 4    |
+Die Pin-Belegung fuer den ESP32-WROOM-32E mit dem Waveshare E-Paper Driver Board:
 
-> Pin-Belegung kann je nach E-Paper-Modell abweichen. Die genauen GPIOs sind in der Firmware-Config unter dem `esp32dev` Environment definiert.
+| E-Paper Pin | ESP32 GPIO |
+|-------------|------------|
+| DIN / MOSI  | GPIO 14    |
+| CLK / SCK   | GPIO 13    |
+| CS          | GPIO 15    |
+| DC          | GPIO 27    |
+| RST         | GPIO 26    |
+| BUSY        | GPIO 25    |
 
-### Firmware flashen
+Diese Pins entsprechen dem `waveshare-esp32-driver` Environment in der TRMNL Firmware (`src/DEV_Config.h`).
 
-#### 1. PlatformIO installieren
+### 3-Farben Display Hinweis
+
+Das Waveshare 7.5" (B) ist ein 3-Farben Display (rot/schwarz/weiss). In der TRMNL Firmware wird der passende Treiber `EP75R_800x480` ueber das Build-Flag `BOARD_XIAO_EPAPER_DISPLAY_3CLR` aktiviert. Dieses Flag ist aktuell nur im `TRMNL_7inch5_OG_DIY_Kit_3CLR` Environment (ESP32-S3) konfiguriert.
+
+Fuer unseren ESP32-WROOM-32E muss ein **custom PlatformIO Environment** in `platformio.ini` erstellt werden:
+
+```ini
+[env:custom_esp32_3clr]
+extends = env:esp32_base
+board = esp32dev
+board_build.f_cpu = 240000000L
+board_build.f_flash = 80000000L
+board_build.flash_mode = dio
+build_flags =
+    ${env:esp32_base.build_flags}
+    -D BOARD_WAVESHARE_ESP32_DRIVER
+    -D PNG_MAX_BUFFERED_PIXELS=6432
+```
+
+> TODO: Den Display-Treiber in `src/display.cpp` fuer diese Kombination auf `EP75R_800x480` umstellen, damit der 3-Farben Modus genutzt wird. Ohne Anpassung wird nur schwarz/weiss gerendert.
+
+## Firmware flashen
+
+### 1. PlatformIO installieren
 
 ```bash
 # via Homebrew
@@ -52,24 +80,26 @@ brew install platformio
 pip install platformio
 ```
 
-#### 2. Firmware klonen
+### 2. Firmware klonen
 
 ```bash
 git clone https://github.com/usetrmnl/firmware.git trmnl-firmware
 cd trmnl-firmware
 ```
 
-#### 3. Bauen und flashen
+### 3. Custom Environment anlegen
+
+Das oben beschriebene `[env:custom_esp32_3clr]` Environment in `platformio.ini` einfuegen.
+
+### 4. Bauen und flashen
 
 ESP32 per USB anschliessen, dann:
 
 ```bash
-pio run -e esp32dev --target upload
+pio run -e custom_esp32_3clr --target upload
 ```
 
-Das Target `esp32dev` ist fuer den generischen ESP32 (240MHz, DIO Flash-Mode) — passt zum WROOM-32E.
-
-#### 4. Device konfigurieren
+### 5. Device konfigurieren
 
 Nach dem Flashen startet der ESP32 im WiFi AP-Modus:
 
