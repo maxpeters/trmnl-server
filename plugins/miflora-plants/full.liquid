@@ -1,0 +1,35 @@
+<div class="layout layout--col gap--small">
+  <div class="flex flex--row flex--between">
+    <span class="title title--small">Pflanzen</span>
+    <span class="label label--small label--gray">{{ timestamp | date: "%d.%m. %H:%M" }}</span>
+  </div>
+
+  <div class="divider"></div>
+
+  {% for plant in analyses %}
+  <div class="flex flex--col gap--none" style="padding: 6px 0;">
+    <div class="flex flex--row flex--between">
+      <span class="title title--small">{{ plant.sensor_name }}</span>
+      {% if plant.latest_reading %}
+      <span class="value value--small value--tnums">{{ plant.latest_reading.moisture }}%</span>
+      {% endif %}
+    </div>
+    {% if plant.latest_reading %}
+    <div class="flex flex--row gap--medium">
+      <span class="label label--small">{{ plant.latest_reading.temperature }}C</span>
+      <span class="label label--small">{{ plant.latest_reading.light }} lux</span>
+      <span class="label label--small">{{ plant.latest_reading.conductivity }} uS/cm</span>
+    </div>
+    {% endif %}
+    {% if plant.prediction %}
+    <span class="label label--small label--gray">{{ plant.prediction.message }}</span>
+    {% endif %}
+  </div>
+  {% unless forloop.last %}<div class="divider"></div>{% endunless %}
+  {% endfor %}
+</div>
+
+<div class="title_bar">
+  <span class="title">MiFlora</span>
+  <span class="instance">Pflanzen Sensor</span>
+</div>

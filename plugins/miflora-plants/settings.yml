@@ -1,0 +1,12 @@
+name: MiFlora Pflanzen
+id: miflora-plants-v1
+strategy: polling
+polling_url: http://MacBookPro.fritz.box:8420/api/plants/data?days=7
+polling_verb: get
+refresh_interval: 30
+custom_fields:
+  - keyname: server_url
+    name: MiFlora Dashboard URL
+    field_type: text
+    default: http://MacBookPro.fritz.box:8420
+    placeholder: http://hostname:8420
