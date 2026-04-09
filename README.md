@@ -35,6 +35,25 @@ Wir nutzen [LaraPaper](https://github.com/usetrmnl/larapaper) als BYOS Server â€
 ```bash
 git clone https://github.com/usetrmnl/larapaper.git
 cd larapaper/docker/prod
+```
+
+Vor dem ersten Start muss ein `APP_KEY` in der `docker-compose.yml` gesetzt werden:
+
+```bash
+# Key generieren
+echo "base64:$(openssl rand -base64 32)"
+```
+
+Den generierten Key in `docker-compose.yml` eintragen (Zeile ist auskommentiert):
+
+```yaml
+environment:
+    - APP_KEY=base64:deinGenerierterKey...
+```
+
+Dann starten:
+
+```bash
 docker compose up -d
 ```
 
