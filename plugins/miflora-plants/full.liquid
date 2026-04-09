@@ -1,35 +1,56 @@
-<div class="layout layout--col gap--small">
-  <div class="flex flex--row flex--between">
-    <span class="title title--small">Pflanzen</span>
-    <span class="label label--small label--gray">{{ timestamp | date: "%d.%m. %H:%M" }}</span>
-  </div>
-
-  <div class="divider"></div>
-
-  {% for plant in analyses %}
-  <div class="flex flex--col gap--none" style="padding: 6px 0;">
-    <div class="flex flex--row flex--between">
-      <span class="title title--small">{{ plant.sensor_name }}</span>
+<div class="layout layout--col gap--small h--full">
+  <div class="grid grid--cols-3 gap--medium grow">
+    {% for plant in analyses %}
+    <div class="flex flex--col gap--none" style="border: 2px solid #000; padding: 10px;">
+      <div class="text--center">
+        <div style="font-size: 16px; font-weight: 700; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px;">{{ plant.sensor_name }}</div>
+      </div>
       {% if plant.latest_reading %}
-      <span class="value value--small value--tnums">{{ plant.latest_reading.moisture }}%</span>
+      <div class="text--center">
+        <div style="font-size: 48px; font-weight: 700; line-height: 1;">{{ plant.latest_reading.moisture }}%</div>
+      </div>
+      {% assign chart_key = plant.sensor_name %}
+      {% assign points = chart_data[chart_key].moisture %}
+      {% if points and points.size > 1 %}
+      <div class="grow flex flex--center-y" style="margin: 6px 0;">
+        {% assign min_val = 100 %}
+        {% assign max_val = 0 %}
+        {% for point in points %}
+          {% if point[1] < min_val %}{% assign min_val = point[1] %}{% endif %}
+          {% if point[1] > max_val %}{% assign max_val = point[1] %}{% endif %}
+        {% endfor %}
+        {% assign range = max_val | minus: min_val %}
+        {% if range == 0 %}{% assign range = 1 %}{% endif %}
+        <svg viewBox="0 0 200 50" preserveAspectRatio="none" style="width:100%;height:70px;">
+          <polyline fill="none" stroke="#000" stroke-width="2.5" points="{% for point in points %}{% assign x = forloop.index0 | times: 200 | divided_by: points.size %}{% assign y = point[1] | minus: min_val | times: 44 | divided_by: range %}{% assign y_flip = 44 | minus: y | plus: 2 %}{{ x }},{{ y_flip }} {% endfor %}" />
+        </svg>
+      </div>
+      {% endif %}
+      <div style="border-top: 1px solid #000; padding-top: 6px; margin-top: auto;">
+        <div class="flex flex--row flex--between" style="font-size: 13px; font-weight: 600;">
+          <span>{{ plant.latest_reading.temperature }}°C</span>
+          <span>{{ plant.latest_reading.light }} lux</span>
+          <span>{{ plant.latest_reading.battery }}%</span>
+        </div>
+        {% if plant.prediction %}
+        <div class="text--center" style="margin-top: 4px;">
+          {% if plant.prediction.status == "dry" or plant.prediction.days_until_dry <= 1 %}
+          <div style="font-size: 14px; font-weight: 700; background: #000; color: #fff; padding: 2px 6px;">GIESSEN!</div>
+          {% elsif plant.prediction.days_until_dry <= 3 %}
+          <div style="font-size: 13px; font-weight: 600; border: 1px solid #000; padding: 1px 4px;">~{{ plant.prediction.days_until_dry | floor }} Tage</div>
+          {% else %}
+          <div style="font-size: 13px; font-weight: 600;">~{{ plant.prediction.days_until_dry | floor }} Tage OK</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
       {% endif %}
     </div>
-    {% if plant.latest_reading %}
-    <div class="flex flex--row gap--medium">
-      <span class="label label--small">{{ plant.latest_reading.temperature }}C</span>
-      <span class="label label--small">{{ plant.latest_reading.light }} lux</span>
-      <span class="label label--small">{{ plant.latest_reading.conductivity }} uS/cm</span>
-    </div>
-    {% endif %}
-    {% if plant.prediction %}
-    <span class="label label--small label--gray">{{ plant.prediction.message }}</span>
-    {% endif %}
+    {% endfor %}
   </div>
-  {% unless forloop.last %}<div class="divider"></div>{% endunless %}
-  {% endfor %}
 </div>
 
 <div class="title_bar">
   <span class="title">MiFlora</span>
-  <span class="instance">Pflanzen Sensor</span>
+  <span class="instance">{{ timestamp | date: "%d.%m. %H:%M" }}</span>
 </div>
