@@ -49,7 +49,7 @@ The server renders HTML screens to 800x480 1-bit BMP images suitable for the e-i
 | Komponente | Modell | Details |
 |------------|--------|---------|
 | Microcontroller | **DFRobot Firebeetle ESP32 V1.0** (ESP32-WROOM-32E) | 240MHz, WiFi, 4MB Flash |
-| Display | **Waveshare 7.5" E-Paper HAT (B)** Rev2.2 | 800x480, 3-Farben (rot/schwarz/weiss), SPI |
+| Display | **Waveshare 7.5" E-Paper HAT (B)** Rev2.2, Panel: **075RW-Z08 v3** | 800x480, 3-Farben (rot/schwarz/weiss), SPI, Chip: UC81xx |
 | Batterie | **10.000mAh LiPo** | 3.7V |
 | Server | **MacBook** (macOS) | Node.js, lokales Netzwerk |
 
@@ -57,16 +57,16 @@ The server renders HTML screens to 800x480 1-bit BMP images suitable for the e-i
 
 Verkabelung vom Waveshare e-Paper Driver HAT Rev2.2 zum DFRobot Firebeetle ESP32:
 
-| HAT Pin | ESP32 Board-Label | ESP32 GPIO |
-|---------|-------------------|------------|
-| VCC     | 3V                | 3.3V       |
-| GND     | GND               | GND        |
-| DIN     | MO (MOSI)         | GPIO 23    |
-| CLK     | SCK               | GPIO 18    |
-| CS      | SDA               | GPIO 21    |
-| DC      | MISO              | GPIO 19    |
-| RST     | SCL               | GPIO 22    |
-| BUSY    | D9                | GPIO 2     |
+| HAT Pin | Kabelfarbe | ESP32 Board-Label | ESP32 GPIO |
+|---------|------------|-------------------|------------|
+| VCC     | grau       | 3V                | 3.3V       |
+| GND     | braun      | GND               | GND        |
+| DIN     | blau       | MO (MOSI)         | GPIO 23    |
+| CLK     | gelb       | SCK               | GPIO 18    |
+| CS      | orange     | D9                | GPIO 2     |
+| DC      | gruen      | SCL               | GPIO 22    |
+| RST     | weiss      | SDA               | GPIO 21    |
+| BUSY    | lila       | D7                | GPIO 13    |
 
 > Diese Pins sind in der TRMNL Firmware unter `src/DEV_Config.h` im `BOARD_WAVESHARE_ESP32_DRIVER` Block konfiguriert. Bei anderem Board muessen die GPIOs dort angepasst werden.
 
@@ -131,11 +131,20 @@ Nach dem Flashen startet der ESP32 im WiFi AP-Modus:
 
 ### Serial Monitor
 
-Zum Debuggen:
+Zum Debuggen die serielle Ausgabe des ESP32 mitlesen:
 
 ```bash
+cd ~/trmnl-firmware
 pio device monitor -e waveshare-esp32-driver
 ```
+
+Zeigt WiFi-Verbindung, API-Calls, Display-Updates und Fehlermeldungen in Echtzeit.
+
+**Tipps:**
+- ESP32 muss per USB verbunden sein
+- Baudrate wird automatisch aus `platformio.ini` uebernommen (115200)
+- Beenden mit `Ctrl+C`
+- Falls kein Output kommt: USB-Kabel pruefen (manche Kabel sind nur Ladekabel ohne Daten)
 
 ## Admin UI
 
