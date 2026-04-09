@@ -68,52 +68,34 @@
     </div>
   </div>
 
-  <!-- Right: Phase bar visualization -->
+  <!-- Right: Hypnogram -->
   <div class="flex flex--col flex--center-y grow" style="border-left: 2px solid #000; padding-left: 10px;">
-    {% assign bar_total = s.deep_sleep_min | plus: s.light_sleep_min | plus: s.rem_sleep_min | plus: s.awake_min %}
-    {% assign deep_w = s.deep_sleep_min | times: 100 | divided_by: bar_total %}
-    {% assign light_w = s.light_sleep_min | times: 100 | divided_by: bar_total %}
-    {% assign rem_w = s.rem_sleep_min | times: 100 | divided_by: bar_total %}
-    {% assign awake_w = s.awake_min | times: 100 | divided_by: bar_total %}
+    {% assign total_dur = s.total_sleep_min %}
+    {% if total_dur and total_dur > 0 and s.phases.size > 0 %}
+    <svg viewBox="0 0 200 80" style="width: 100%; height: 100%; display: block;">
+      {% assign px = 0 %}
+      {% for p in s.phases %}
+        {% assign pw = p.duration_min | times: 170 | divided_by: total_dur %}
+        {% if pw < 1 %}{% assign pw = 1 %}{% endif %}
+        {% if p.phase == "deep" %}{% assign py = 56 %}
+        {% elsif p.phase == "light" %}{% assign py = 38 %}
+        {% elsif p.phase == "rem" %}{% assign py = 20 %}
+        {% else %}{% assign py = 2 %}
+        {% endif %}
+        <rect x="{{ px }}" y="{{ py }}" width="{{ pw }}" height="14" fill="#000" />
+        {% assign px = px | plus: pw %}
+      {% endfor %}
 
-    <svg viewBox="0 0 200 140" style="width: 100%; height: 100%; display: block;">
-      <defs>
-        <pattern id="rem-hatch-half" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
-          <rect width="5" height="5" fill="#fff" />
-          <line x1="0" y1="0" x2="0" y2="5" stroke="#000" stroke-width="2" />
-        </pattern>
-      </defs>
+      <text x="178" y="12" style="font-size: 7px; font-weight: 700;">W</text>
+      <text x="172" y="30" style="font-size: 7px; font-weight: 700;">REM</text>
+      <text x="178" y="48" style="font-size: 7px; font-weight: 700;">L</text>
+      <text x="178" y="66" style="font-size: 7px; font-weight: 700;">T</text>
 
-      <!-- Horizontal stacked bar -->
-      {% assign bx = 0 %}
-      {% assign deep_px = deep_w | times: 2 %}
-      <rect x="{{ bx }}" y="10" width="{{ deep_px }}" height="28" fill="#000" />
-      {% assign bx = bx | plus: deep_px %}
-
-      {% assign light_px = light_w | times: 2 %}
-      <rect x="{{ bx }}" y="10" width="{{ light_px }}" height="28" fill="#fff" stroke="#000" stroke-width="2" />
-      {% assign bx = bx | plus: light_px %}
-
-      {% assign rem_px = rem_w | times: 2 %}
-      <rect x="{{ bx }}" y="10" width="{{ rem_px }}" height="28" fill="url(#rem-hatch-half)" stroke="#000" stroke-width="2" />
-      {% assign bx = bx | plus: rem_px %}
-
-      {% assign awake_px = awake_w | times: 2 %}
-      <rect x="{{ bx }}" y="10" width="{{ awake_px }}" height="28" fill="#fff" stroke="#000" stroke-width="2" stroke-dasharray="3,2" />
-
-      <!-- Legend -->
-      <rect x="0" y="56" width="12" height="12" fill="#000" />
-      <text x="16" y="67" style="font-size: 12px; font-weight: 600;">Tief</text>
-
-      <rect x="52" y="56" width="12" height="12" fill="#fff" stroke="#000" stroke-width="1.5" />
-      <text x="68" y="67" style="font-size: 12px; font-weight: 600;">Leicht</text>
-
-      <rect x="0" y="78" width="12" height="12" fill="url(#rem-hatch-half)" stroke="#000" stroke-width="1" />
-      <text x="16" y="89" style="font-size: 12px; font-weight: 600;">REM</text>
-
-      <rect x="52" y="78" width="12" height="12" fill="#fff" stroke="#000" stroke-width="1.5" stroke-dasharray="2,1" />
-      <text x="68" y="89" style="font-size: 12px; font-weight: 600;">Wach</text>
+      <line x1="0" y1="72" x2="170" y2="72" stroke="#000" stroke-width="0.5" />
+      <text x="0" y="79" style="font-size: 7px; font-weight: 600;">{{ s.start_time }}</text>
+      <text x="170" y="79" text-anchor="end" style="font-size: 7px; font-weight: 600;">{{ s.end_time }}</text>
     </svg>
+    {% endif %}
   </div>
 
   {% endif %}
