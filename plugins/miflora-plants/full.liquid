@@ -13,15 +13,20 @@
       {% assign points = chart_data[chart_key].moisture %}
       {% if points and points.size > 1 %}
       <div class="grow flex flex--center-y" style="margin: 6px 0;">
+        {% assign dry_threshold = 15 %}
         {% assign min_val = 100 %}
         {% assign max_val = 0 %}
         {% for point in points %}
           {% if point[1] < min_val %}{% assign min_val = point[1] %}{% endif %}
           {% if point[1] > max_val %}{% assign max_val = point[1] %}{% endif %}
         {% endfor %}
+        {% if min_val > dry_threshold %}{% assign min_val = dry_threshold %}{% endif %}
         {% assign range = max_val | minus: min_val %}
         {% if range == 0 %}{% assign range = 1 %}{% endif %}
+        {% assign dry_y = dry_threshold | minus: min_val | times: 44 | divided_by: range %}
+        {% assign dry_y_flip = 44 | minus: dry_y | plus: 2 %}
         <svg viewBox="0 0 200 50" preserveAspectRatio="none" style="width:100%;height:70px;">
+          <line x1="0" y1="{{ dry_y_flip }}" x2="200" y2="{{ dry_y_flip }}" stroke="#000" stroke-width="1" stroke-dasharray="4,3" />
           <polyline fill="none" stroke="#000" stroke-width="2.5" points="{% for point in points %}{% assign x = forloop.index0 | times: 200 | divided_by: points.size %}{% assign y = point[1] | minus: min_val | times: 44 | divided_by: range %}{% assign y_flip = 44 | minus: y | plus: 2 %}{{ x }},{{ y_flip }} {% endfor %}" />
         </svg>
       </div>
