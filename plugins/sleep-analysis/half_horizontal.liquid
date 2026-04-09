@@ -1,0 +1,125 @@
+<div class="flex flex--row h--full" style="padding: 6px 10px;">
+
+  {% if fitness.available == false or fitness.sleep == nil %}
+  <div class="flex flex--center-x flex--center-y grow">
+    <div style="font-size: 18px; font-weight: 700; color: #000;">Keine Daten</div>
+  </div>
+  {% else %}
+
+  {% assign s = fitness.sleep %}
+
+  <!-- Left: Score hero -->
+  <div class="flex flex--col flex--center-y" style="width: 120px; text-align: center;">
+    <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #000;">SCHLAF</div>
+    <div style="font-size: 52px; font-weight: 700; line-height: 1; color: #000;">{{ s.sleep_score }}</div>
+    <div style="font-size: 12px; font-weight: 700; color: #000;">
+      {% if s.sleep_score >= 85 %}Sehr gut
+      {% elsif s.sleep_score >= 70 %}Gut
+      {% elsif s.sleep_score >= 50 %}Maessig
+      {% else %}Schlecht
+      {% endif %}
+    </div>
+    <div style="font-size: 14px; font-weight: 600; color: #000; margin-top: 4px;">
+      {% assign total_h = s.total_sleep_min | divided_by: 60 %}
+      {% assign total_m = s.total_sleep_min | modulo: 60 %}
+      {{ total_h }}h {{ total_m }}m
+    </div>
+    <div style="font-size: 11px; font-weight: 600; color: #000;">
+      {{ s.start_time }} - {{ s.end_time }}
+    </div>
+  </div>
+
+  <!-- Center: Phase breakdown -->
+  <div class="flex flex--col flex--center-y" style="border-left: 2px solid #000; padding-left: 10px; width: 170px;">
+    <div style="font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #000; margin-bottom: 4px;">PHASEN</div>
+
+    {% assign deep_h = s.deep_sleep_min | divided_by: 60 %}
+    {% assign deep_m = s.deep_sleep_min | modulo: 60 %}
+    {% assign deep_pct = s.deep_sleep_min | times: 100 | divided_by: s.total_sleep_min %}
+    <div class="flex flex--row flex--between" style="width: 100%; font-size: 13px; font-weight: 600; color: #000; padding: 2px 0; border-bottom: 1px solid #000;">
+      <span style="font-weight: 700;">Tief</span>
+      <span>{{ deep_h }}h{{ deep_m }}m</span>
+      <span style="font-weight: 700;">{{ deep_pct }}%</span>
+    </div>
+
+    {% assign light_h = s.light_sleep_min | divided_by: 60 %}
+    {% assign light_m = s.light_sleep_min | modulo: 60 %}
+    {% assign light_pct = s.light_sleep_min | times: 100 | divided_by: s.total_sleep_min %}
+    <div class="flex flex--row flex--between" style="width: 100%; font-size: 13px; font-weight: 600; color: #000; padding: 2px 0; border-bottom: 1px solid #000;">
+      <span style="font-weight: 700;">Leicht</span>
+      <span>{{ light_h }}h{{ light_m }}m</span>
+      <span style="font-weight: 700;">{{ light_pct }}%</span>
+    </div>
+
+    {% assign rem_h = s.rem_sleep_min | divided_by: 60 %}
+    {% assign rem_m = s.rem_sleep_min | modulo: 60 %}
+    {% assign rem_pct = s.rem_sleep_min | times: 100 | divided_by: s.total_sleep_min %}
+    <div class="flex flex--row flex--between" style="width: 100%; font-size: 13px; font-weight: 600; color: #000; padding: 2px 0; border-bottom: 1px solid #000;">
+      <span style="font-weight: 700;">REM</span>
+      <span>{{ rem_h }}h{{ rem_m }}m</span>
+      <span style="font-weight: 700;">{{ rem_pct }}%</span>
+    </div>
+
+    <div class="flex flex--row flex--between" style="width: 100%; font-size: 13px; font-weight: 600; color: #000; padding: 2px 0;">
+      <span style="font-weight: 700;">Wach</span>
+      <span>{{ s.awake_min }}m</span>
+      {% assign awake_pct = s.awake_min | times: 100 | divided_by: s.total_sleep_min %}
+      <span style="font-weight: 700;">{{ awake_pct }}%</span>
+    </div>
+  </div>
+
+  <!-- Right: Phase bar visualization -->
+  <div class="flex flex--col flex--center-y grow" style="border-left: 2px solid #000; padding-left: 10px;">
+    {% assign bar_total = s.deep_sleep_min | plus: s.light_sleep_min | plus: s.rem_sleep_min | plus: s.awake_min %}
+    {% assign deep_w = s.deep_sleep_min | times: 100 | divided_by: bar_total %}
+    {% assign light_w = s.light_sleep_min | times: 100 | divided_by: bar_total %}
+    {% assign rem_w = s.rem_sleep_min | times: 100 | divided_by: bar_total %}
+    {% assign awake_w = s.awake_min | times: 100 | divided_by: bar_total %}
+
+    <svg viewBox="0 0 200 140" style="width: 100%; height: 100%; display: block;">
+      <defs>
+        <pattern id="rem-hatch-half" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)">
+          <rect width="5" height="5" fill="#fff" />
+          <line x1="0" y1="0" x2="0" y2="5" stroke="#000" stroke-width="2" />
+        </pattern>
+      </defs>
+
+      <!-- Horizontal stacked bar -->
+      {% assign bx = 0 %}
+      {% assign deep_px = deep_w | times: 2 %}
+      <rect x="{{ bx }}" y="10" width="{{ deep_px }}" height="28" fill="#000" />
+      {% assign bx = bx | plus: deep_px %}
+
+      {% assign light_px = light_w | times: 2 %}
+      <rect x="{{ bx }}" y="10" width="{{ light_px }}" height="28" fill="#fff" stroke="#000" stroke-width="2" />
+      {% assign bx = bx | plus: light_px %}
+
+      {% assign rem_px = rem_w | times: 2 %}
+      <rect x="{{ bx }}" y="10" width="{{ rem_px }}" height="28" fill="url(#rem-hatch-half)" stroke="#000" stroke-width="2" />
+      {% assign bx = bx | plus: rem_px %}
+
+      {% assign awake_px = awake_w | times: 2 %}
+      <rect x="{{ bx }}" y="10" width="{{ awake_px }}" height="28" fill="#fff" stroke="#000" stroke-width="2" stroke-dasharray="3,2" />
+
+      <!-- Legend -->
+      <rect x="0" y="56" width="12" height="12" fill="#000" />
+      <text x="16" y="67" style="font-size: 12px; font-weight: 600;">Tief</text>
+
+      <rect x="52" y="56" width="12" height="12" fill="#fff" stroke="#000" stroke-width="1.5" />
+      <text x="68" y="67" style="font-size: 12px; font-weight: 600;">Leicht</text>
+
+      <rect x="0" y="78" width="12" height="12" fill="url(#rem-hatch-half)" stroke="#000" stroke-width="1" />
+      <text x="16" y="89" style="font-size: 12px; font-weight: 600;">REM</text>
+
+      <rect x="52" y="78" width="12" height="12" fill="#fff" stroke="#000" stroke-width="1.5" stroke-dasharray="2,1" />
+      <text x="68" y="89" style="font-size: 12px; font-weight: 600;">Wach</text>
+    </svg>
+  </div>
+
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">Schlaf</span>
+  <span class="instance">{{ fitness.date }}</span>
+</div>

@@ -1,0 +1,107 @@
+<div class="layout layout--col gap--small h--full" style="padding: 12px 16px;">
+
+  {% if fitness.available == false %}
+  <div class="flex flex--center-x flex--center-y grow">
+    <div style="font-size: 24px; font-weight: 700;">Keine Fitness-Daten verfuegbar</div>
+  </div>
+  {% else %}
+
+  <div class="flex flex--row gap--medium grow">
+
+    <!-- Left column: Steps hero + daily stats -->
+    <div class="flex flex--col flex--center-y" style="width: 280px;">
+      <div style="font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #000;">SCHRITTE</div>
+      <div style="font-size: 96px; font-weight: 700; line-height: 1; color: #000;">{{ fitness.daily.steps | default: "--" }}</div>
+      <div style="font-size: 16px; font-weight: 600; color: #000; margin-top: 4px;">{{ fitness.daily.distance_km | default: "0" }} km</div>
+
+      <div style="margin-top: 16px; border-top: 2px solid #000; padding-top: 12px; width: 100%;">
+        <div class="flex flex--row flex--between" style="margin-bottom: 8px;">
+          <div class="flex flex--col" style="text-align: center; flex: 1;">
+            <span style="font-size: 28px; font-weight: 700; color: #000;">{{ fitness.daily.active_calories | default: 0 | floor }}</span>
+            <span style="font-size: 12px; font-weight: 600; color: #000;">AKTIV KCAL</span>
+          </div>
+          <div style="width: 2px; background: #000;"></div>
+          <div class="flex flex--col" style="text-align: center; flex: 1;">
+            <span style="font-size: 28px; font-weight: 700; color: #000;">{{ fitness.daily.resting_hr | default: "--" }}</span>
+            <span style="font-size: 12px; font-weight: 600; color: #000;">RUHE HF</span>
+          </div>
+        </div>
+        <div class="flex flex--row flex--between" style="font-size: 13px; font-weight: 600; color: #000;">
+          <span>Min {{ fitness.daily.min_hr | default: "--" }} bpm</span>
+          <span>Max {{ fitness.daily.max_hr | default: "--" }} bpm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column: Last activity + week summary -->
+    <div class="flex flex--col grow" style="border-left: 2px solid #000; padding-left: 16px;">
+
+      <!-- Last activity -->
+      {% if fitness.last_activity %}
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #000; margin-bottom: 8px;">LETZTES WORKOUT</div>
+        <div style="border: 2px solid #000; padding: 10px;">
+          <div style="font-size: 22px; font-weight: 700; color: #000; margin-bottom: 6px;">{{ fitness.last_activity.name }}</div>
+          <div class="flex flex--row flex--between" style="margin-bottom: 4px;">
+            <span style="font-size: 15px; font-weight: 600; color: #000;">{{ fitness.last_activity.duration_min }} min</span>
+            {% if fitness.last_activity.distance_km > 0 %}
+            <span style="font-size: 15px; font-weight: 600; color: #000;">{{ fitness.last_activity.distance_km }} km</span>
+            {% endif %}
+            <span style="font-size: 15px; font-weight: 600; color: #000;">{{ fitness.last_activity.calories | floor }} kcal</span>
+          </div>
+          <div class="flex flex--row flex--between" style="font-size: 13px; font-weight: 600; color: #000;">
+            <span>Avg {{ fitness.last_activity.avg_hr | floor }} bpm</span>
+            <span>Max {{ fitness.last_activity.max_hr | floor }} bpm</span>
+          </div>
+          <div style="font-size: 12px; font-weight: 600; color: #000; margin-top: 4px;">{{ fitness.last_activity.start_time }}</div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Week summary -->
+      {% if fitness.week_summary %}
+      <div>
+        <div style="font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #000; margin-bottom: 8px;">WOCHE</div>
+        <div class="flex flex--row gap--medium">
+          <div class="flex flex--col" style="text-align: center;">
+            <span style="font-size: 28px; font-weight: 700; color: #000;">{{ fitness.week_summary.activities_count }}</span>
+            <span style="font-size: 11px; font-weight: 600; color: #000;">WORKOUTS</span>
+          </div>
+          <div class="flex flex--col" style="text-align: center;">
+            <span style="font-size: 28px; font-weight: 700; color: #000;">{{ fitness.week_summary.total_duration_min }}</span>
+            <span style="font-size: 11px; font-weight: 600; color: #000;">MINUTEN</span>
+          </div>
+          {% if fitness.week_summary.total_distance_km > 0 %}
+          <div class="flex flex--col" style="text-align: center;">
+            <span style="font-size: 28px; font-weight: 700; color: #000;">{{ fitness.week_summary.total_distance_km }}</span>
+            <span style="font-size: 11px; font-weight: 600; color: #000;">KM</span>
+          </div>
+          {% endif %}
+          <div class="flex flex--col" style="text-align: center;">
+            <span style="font-size: 28px; font-weight: 700; color: #000;">{{ fitness.week_summary.zone2_minutes }}</span>
+            <span style="font-size: 11px; font-weight: 600; color: #000;">ZONE 2</span>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- HR Zones info -->
+      {% if fitness.hr_zones %}
+      <div style="margin-top: auto; border-top: 1px solid #000; padding-top: 6px;">
+        <div class="flex flex--row flex--between" style="font-size: 12px; font-weight: 600; color: #000;">
+          <span>Zone 2: {{ fitness.hr_zones.zone2_low }}-{{ fitness.hr_zones.zone2_high }} bpm</span>
+          <span>Max HF: {{ fitness.hr_zones.max_hr }} bpm</span>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+
+  {% endif %}
+</div>
+
+<div class="title_bar">
+  <span class="title">Fitness & Health</span>
+  <span class="instance">{{ fitness.date }}</span>
+</div>
