@@ -12,23 +12,23 @@
 
     <!-- Left column: Score hero -->
     <div class="flex flex--col flex--center-y" style="width: 260px; text-align: center;">
-      <div style="font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #000;">SCHLAF SCORE</div>
-      <div style="font-size: 110px; font-weight: 700; line-height: 1; color: #000;">{{ s.sleep_score }}</div>
+      <div style="margin-top: 4px; font-size: 48px; font-weight: 700; line-height: 1; color: #000;">
+        {% assign total_h = s.total_sleep_min | divided_by: 60 %}
+        {% assign total_m = s.total_sleep_min | modulo: 60 %}
+        {{ total_h }}h {{ total_m }}m
+      </div>
+      <div style="font-size: 16px; font-weight: 600; color: #000; margin-top: 4px;">
+        {{ s.start_time }} - {{ s.end_time }}
+      </div>
+
+      <div style="margin-top: 12px; font-size: 14px; font-weight: 700; letter-spacing: 1px; color: #000;">SCORE</div>
+      <div style="font-size: 64px; font-weight: 700; line-height: 1; color: #000;">{{ s.sleep_score }}</div>
       <div style="font-size: 16px; font-weight: 700; color: #000; margin-top: 4px;">
         {% if s.sleep_score >= 85 %}Sehr gut
         {% elsif s.sleep_score >= 70 %}Gut
         {% elsif s.sleep_score >= 50 %}Maessig
         {% else %}Schlecht
         {% endif %}
-      </div>
-
-      <div style="margin-top: 12px; font-size: 18px; font-weight: 600; color: #000;">
-        {% assign total_h = s.total_sleep_min | divided_by: 60 %}
-        {% assign total_m = s.total_sleep_min | modulo: 60 %}
-        {{ total_h }}h {{ total_m }}min
-      </div>
-      <div style="font-size: 14px; font-weight: 600; color: #000; margin-top: 4px;">
-        {{ s.start_time }} - {{ s.end_time }}
       </div>
     </div>
 
