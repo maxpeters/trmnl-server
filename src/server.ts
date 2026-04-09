@@ -125,7 +125,7 @@ app.get("/api/display", async (req, res) => {
   const screen = screens[screenIndex];
 
   // Generate BMP filename
-  const filename = `${mac.replace(/:/g, "")}_${Date.now()}.png`;
+  const filename = `${mac.replace(/:/g, "")}_${Date.now()}.bmp`;
 
   // Pre-generate and cache the BMP
   try {
@@ -158,7 +158,7 @@ app.get("/api/bitmap/:filename", async (req, res) => {
   const cached = bmpCache.get(filename);
 
   if (cached) {
-    res.set("Content-Type", "image/png");
+    res.set("Content-Type", "image/bmp");
     res.send(cached.buffer);
     // Cleanup old entries
     bmpCache.delete(filename);
@@ -168,7 +168,7 @@ app.get("/api/bitmap/:filename", async (req, res) => {
   // If not cached, generate a fallback
   try {
     const bmp = await renderTextToBmp("TRMNL", "No content available");
-    res.set("Content-Type", "image/png");
+    res.set("Content-Type", "image/bmp");
     res.send(bmp);
   } catch {
     res.status(404).json({ error: "Bitmap not found" });
@@ -249,7 +249,7 @@ app.get("/api/screens/:id/preview", async (req, res) => {
 
   try {
     const bmp = await renderHtmlToBmp(screen.html);
-    res.set("Content-Type", "image/png");
+    res.set("Content-Type", "image/bmp");
     res.send(bmp);
   } catch (err) {
     res.status(500).json({ error: "Render failed" });

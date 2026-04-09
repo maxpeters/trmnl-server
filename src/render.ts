@@ -188,14 +188,53 @@ export async function renderHtmlToBmp(html: string): Promise<Buffer> {
   });
   const pngBuffer = resvg.render().asPng();
 
-  // Sharp: threshold to 1-bit black/white PNG (bilevel)
-  const output = await sharp(pngBuffer)
+  // Sharp: threshold to 1-bit raw pixels
+  const raw = await sharp(pngBuffer)
     .threshold(128)
     .toColorspace("b-w")
-    .png({ colours: 2, effort: 1 })
+    .raw()
     .toBuffer();
 
-  return output;
+  // Build 1-bit BMP (bottom-up, padded to 4-byte rows)
+  const rowBytes = Math.ceil(WIDTH / 8);
+  const paddedRowBytes = Math.ceil(rowBytes / 4) * 4;
+  const imageSize = paddedRowBytes * HEIGHT;
+  const headerSize = 14 + 40 + 8; // BMP header + DIB header + 2-color palette
+  const fileSize = headerSize + imageSize;
+
+  const bmp = Buffer.alloc(fileSize);
+  // BMP file header
+  bmp.write("BM", 0);
+  bmp.writeUInt32LE(fileSize, 2);
+  bmp.writeUInt32LE(headerSize, 10);
+  // DIB header (BITMAPINFOHEADER)
+  bmp.writeUInt32LE(40, 14);
+  bmp.writeInt32LE(WIDTH, 18);
+  bmp.writeInt32LE(HEIGHT, 22);
+  bmp.writeUInt16LE(1, 26); // planes
+  bmp.writeUInt16LE(1, 28); // bits per pixel
+  bmp.writeUInt32LE(0, 30); // no compression
+  bmp.writeUInt32LE(imageSize, 34);
+  // Color palette: 0=black, 1=white
+  bmp.writeUInt32LE(0x00000000, 54); // black
+  bmp.writeUInt32LE(0x00FFFFFF, 58); // white
+
+  // Convert raw 8-bit grayscale to 1-bit, bottom-up
+  for (let y = 0; y < HEIGHT; y++) {
+    const srcRow = y * WIDTH;
+    const dstRow = headerSize + (HEIGHT - 1 - y) * paddedRowBytes;
+    for (let x = 0; x < WIDTH; x += 8) {
+      let byte = 0;
+      for (let bit = 0; bit < 8 && (x + bit) < WIDTH; bit++) {
+        if (raw[srcRow + x + bit] > 128) {
+          byte |= (0x80 >> bit); // white = 1
+        }
+      }
+      bmp[dstRow + (x >> 3)] = byte;
+    }
+  }
+
+  return bmp;
 }
 
 /**
