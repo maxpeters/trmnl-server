@@ -39,8 +39,8 @@
     {% endfor %}
 
     <svg viewBox="0 0 440 280" style="width:100%;height:100%;display:block;">
-      {% comment %} Average: filled area {% endcomment %}
-      <polygon fill="#000" opacity="0.25" points="{% for a in avg %}{% assign ax = a.hour | minus: 6 | times: 25 | plus: 10 %}{% assign ay = a.avg_percentage | times: 210 | divided_by: max_pct %}{% assign apy = 230 | minus: ay %}{{ ax }},{{ apy }} {% endfor %}{% assign last_a = avg | last %}{% assign last_ax = last_a.hour | minus: 6 | times: 25 | plus: 10 %}{{ last_ax }},230 {% assign first_a = avg | first %}{% assign first_ax = first_a.hour | minus: 6 | times: 25 | plus: 10 %}{{ first_ax }},230" />
+      {% comment %} Average: outline area with dashed border {% endcomment %}
+      <polygon fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="4,3" points="{% for a in avg %}{% assign ax = a.hour | minus: 6 | times: 25 | plus: 10 %}{% assign ay = a.avg_percentage | times: 210 | divided_by: max_pct %}{% assign apy = 230 | minus: ay %}{{ ax }},{{ apy }} {% endfor %}{% assign last_a = avg | last %}{% assign last_ax = last_a.hour | minus: 6 | times: 25 | plus: 10 %}{{ last_ax }},230 {% assign first_a = avg | first %}{% assign first_ax = first_a.hour | minus: 6 | times: 25 | plus: 10 %}{{ first_ax }},230" />
 
       {% comment %} Today: solid line {% endcomment %}
       {% if hours and hours.size > 1 %}
@@ -52,9 +52,7 @@
         {% assign cx = current.hour | minus: 6 | times: 25 | plus: 10 %}
         {% assign cy = current.percentage | times: 210 | divided_by: max_pct %}
         {% assign cpy = 230 | minus: cy %}
-        <line x1="{{ cx }}" y1="{{ cpy }}" x2="{{ cx }}" y2="230" stroke="#000" stroke-width="1.5" stroke-dasharray="4,4" />
-        <circle cx="{{ cx }}" cy="{{ cpy }}" r="8" fill="#fff" stroke="#000" stroke-width="3" />
-        <text x="{{ cx }}" y="250" text-anchor="middle" style="font-size: 16px; font-weight: 700;">{{ current.hour }}:00</text>
+        <circle cx="{{ cx }}" cy="{{ cpy }}" r="8" fill="#000" />
       {% endif %}
 
       {% comment %} X axis {% endcomment %}
