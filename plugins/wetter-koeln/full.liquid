@@ -40,37 +40,80 @@
     {% assign temp_range = max_temp | minus: min_temp %}
     {% if temp_range == 0 %}{% assign temp_range = 1 %}{% endif %}
 
-    <svg viewBox="0 0 700 250" style="width: 100%; height: 100%; display: block;">
-      <!-- Bringzeit 8:00-8:45 -->
+    {% comment %} Get start hour from first entry {% endcomment %}
+    {% assign first_time = hourly[0].time | split: ":" %}
+    {% assign start_hour = first_time[0] | plus: 0 %}
+    {% assign chart_hours = hourly.size %}
+    {% assign px_per_hour = 29 %}
+    {% assign chart_left = 10 %}
+
+    <svg viewBox="0 0 710 250" style="width: 100%; height: 100%; display: block;">
       <defs>
         <pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse">
           <circle cx="2" cy="2" r="1.2" fill="#000" />
         </pattern>
       </defs>
-      {% assign bring1_x = 8 | times: 29 | plus: 10 %}
-      {% assign bring1_w = 29 %}
-      <rect x="{{ bring1_x }}" y="16" width="{{ bring1_w }}" height="184" fill="url(#dots)" opacity="0.5" />
-      <text x="{{ bring1_x | plus: 14 }}" y="12" text-anchor="middle" style="font-size: 8px; font-weight: 700;">BRING</text>
 
-      <!-- Bringzeit 9:15-9:45 (15 min vor/nach 9:30) -->
-      {% assign bring2_x = 9 | times: 29 | plus: 14 %}
-      {% assign bring2_w = 15 %}
-      <rect x="{{ bring2_x }}" y="16" width="{{ bring2_w }}" height="184" fill="url(#dots)" opacity="0.5" />
+      {% comment %} Kita Bringzeiten: 8:00-8:45 und 9:15-9:45 {% endcomment %}
+      {% comment %} Kita Abholzeiten: 14:20-14:45 und 15:15-15:45 {% endcomment %}
+      {% comment %} Only show if within visible time range {% endcomment %}
 
-      <!-- Abholzeit 14:20-14:45 -->
-      {% assign abhol1_x = 14 | times: 29 | plus: 19 %}
-      {% assign abhol1_w = 12 %}
-      <rect x="{{ abhol1_x }}" y="16" width="{{ abhol1_w }}" height="184" fill="url(#dots)" opacity="0.5" />
-      <text x="{{ abhol1_x | plus: 6 }}" y="12" text-anchor="middle" style="font-size: 8px; font-weight: 700;">ABHOL</text>
+      {% assign bring1_start = 8 %}
+      {% assign bring2_start = 9 %}
+      {% assign abhol1_start = 14 %}
+      {% assign abhol2_start = 15 %}
 
-      <!-- Abholzeit 15:30 (15:15-15:45) -->
-      {% assign abhol2_x = 15 | times: 29 | plus: 14 %}
-      {% assign abhol2_w = 15 %}
-      <rect x="{{ abhol2_x }}" y="16" width="{{ abhol2_w }}" height="184" fill="url(#dots)" opacity="0.5" />
+      {% comment %} Calculate positions relative to start_hour (handles wrap around midnight) {% endcomment %}
+      {% for slot in (0..3) %}
+        {% case slot %}
+          {% when 0 %}
+            {% assign slot_start_h = 8 %}
+            {% assign slot_start_m = 0 %}
+            {% assign slot_end_h = 8 %}
+            {% assign slot_end_m = 45 %}
+            {% assign slot_label = "BRING" %}
+          {% when 1 %}
+            {% assign slot_start_h = 9 %}
+            {% assign slot_start_m = 15 %}
+            {% assign slot_end_h = 9 %}
+            {% assign slot_end_m = 45 %}
+            {% assign slot_label = "" %}
+          {% when 2 %}
+            {% assign slot_start_h = 14 %}
+            {% assign slot_start_m = 20 %}
+            {% assign slot_end_h = 14 %}
+            {% assign slot_end_m = 45 %}
+            {% assign slot_label = "ABHOL" %}
+          {% when 3 %}
+            {% assign slot_start_h = 15 %}
+            {% assign slot_start_m = 15 %}
+            {% assign slot_end_h = 15 %}
+            {% assign slot_end_m = 45 %}
+            {% assign slot_label = "" %}
+        {% endcase %}
 
+        {% comment %} Hours offset from start (handle day wrap) {% endcomment %}
+        {% assign offset = slot_start_h | minus: start_hour %}
+        {% if offset < 0 %}{% assign offset = offset | plus: 24 %}{% endif %}
+
+        {% if offset < chart_hours %}
+          {% assign sx = offset | times: px_per_hour | plus: chart_left %}
+          {% assign sx = sx | plus: slot_start_m | divided_by: 2 %}
+          {% assign duration_min = slot_end_m | minus: slot_start_m %}
+          {% if slot_end_h > slot_start_h %}{% assign duration_min = duration_min | plus: 60 %}{% endif %}
+          {% assign sw = duration_min | divided_by: 2 %}
+          {% if sw < 8 %}{% assign sw = 8 %}{% endif %}
+          <rect x="{{ sx }}" y="16" width="{{ sw }}" height="184" fill="url(#dots)" opacity="0.5" />
+          {% if slot_label != "" %}
+          <text x="{{ sx | plus: sw | divided_by: 2 | plus: sx | divided_by: 2 }}" y="12" text-anchor="middle" style="font-size: 8px; font-weight: 700;">{{ slot_label }}</text>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+
+      {% comment %} Precipitation bars {% endcomment %}
       {% for h in hourly %}
         {% assign i = forloop.index0 %}
-        {% assign bx = i | times: 29 | plus: 10 %}
+        {% assign bx = i | times: px_per_hour | plus: chart_left %}
         {% assign bh = h.precipitation_prob %}
         {% assign by = 200 | minus: bh %}
         {% if h.precipitation_prob > 5 %}
@@ -81,13 +124,15 @@
         {% endif %}
       {% endfor %}
 
-      <polyline fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" points="{% for h in hourly %}{% assign i = forloop.index0 %}{% assign px = i | times: 29 | plus: 21 %}{% assign t = h.temp | floor %}{% assign ty = t | minus: min_temp | times: 150 | divided_by: temp_range %}{% assign py = 190 | minus: ty %}{{ px }},{{ py }} {% endfor %}" />
+      {% comment %} Temperature line {% endcomment %}
+      <polyline fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" points="{% for h in hourly %}{% assign i = forloop.index0 %}{% assign px = i | times: px_per_hour | plus: chart_left | plus: 11 %}{% assign t = h.temp | floor %}{% assign ty = t | minus: min_temp | times: 150 | divided_by: temp_range %}{% assign py = 190 | minus: ty %}{{ px }},{{ py }} {% endfor %}" />
 
+      {% comment %} Temperature labels every 3 hours {% endcomment %}
       {% for h in hourly %}
         {% assign i = forloop.index0 %}
         {% assign mod3 = i | modulo: 3 %}
         {% if mod3 == 0 %}
-          {% assign px = i | times: 29 | plus: 21 %}
+          {% assign px = i | times: px_per_hour | plus: chart_left | plus: 11 %}
           {% assign t = h.temp | floor %}
           {% assign ty = t | minus: min_temp | times: 150 | divided_by: temp_range %}
           {% assign py = 190 | minus: ty | minus: 8 %}
@@ -95,18 +140,25 @@
         {% endif %}
       {% endfor %}
 
-      <line x1="10" y1="201" x2="700" y2="201" stroke="#000" stroke-width="1" />
-      {% for i in (0..7) %}
-        {% assign hour = i | times: 3 %}
-        {% assign tx = hour | times: 29 | plus: 21 %}
-        <text x="{{ tx }}" y="218" text-anchor="middle" style="font-size: 10px; font-weight: 600;">{{ hour }}</text>
+      {% comment %} X-axis with actual hours from data {% endcomment %}
+      <line x1="{{ chart_left }}" y1="201" x2="700" y2="201" stroke="#000" stroke-width="1" />
+      {% for h in hourly %}
+        {% assign i = forloop.index0 %}
+        {% assign mod3 = i | modulo: 3 %}
+        {% if mod3 == 0 %}
+          {% assign tx = i | times: px_per_hour | plus: chart_left | plus: 11 %}
+          {% assign hour_parts = h.time | split: ":" %}
+          {% assign hour_val = hour_parts[0] | plus: 0 %}
+          <text x="{{ tx }}" y="218" text-anchor="middle" style="font-size: 10px; font-weight: 600;">{{ hour_val }}</text>
+        {% endif %}
       {% endfor %}
 
+      {% comment %} Legend {% endcomment %}
       <line x1="20" y1="240" x2="45" y2="240" stroke="#000" stroke-width="3" />
       <text x="50" y="243" style="font-size: 9px; font-weight: 600;">Temp</text>
       <rect x="100" y="234" width="12" height="12" fill="#000" opacity="0.2" />
       <text x="116" y="243" style="font-size: 9px; font-weight: 600;">Regen%</text>
-      <rect x="180" y="234" width="12" height="12" fill="#000" opacity="0.08" />
+      <rect x="180" y="234" width="12" height="12" fill="url(#dots)" opacity="0.5" />
       <text x="196" y="243" style="font-size: 9px; font-weight: 600;">Kita</text>
     </svg>
     {% endif %}
