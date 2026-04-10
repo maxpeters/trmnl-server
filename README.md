@@ -1,3 +1,86 @@
+# TRMNL Server
+
+Unser TRMNL e-ink Display Setup basierend auf [LaraPaper](https://github.com/usetrmnl/larapaper) mit eigener Hardware und Custom Plugins.
+
+## Hardware
+
+| Komponente | Modell | Details |
+|------------|--------|---------|
+| Microcontroller | DFRobot Firebeetle ESP32 V1.0 | ESP32-WROOM-32E, 240MHz, WiFi, 4MB Flash |
+| Display | Waveshare 7.5" E-Paper HAT (B) Rev2.2 | 800x480, 3-Farben (schwarz/weiss/rot), SPI, UC8179 |
+| Batterie | 10.000mAh LiPo | 3.7V |
+| Server | LaraPaper (Docker) | Lokal gebautes Image mit BWR-Support |
+
+### Display Format
+
+**PNG 8-bit BWR (Black/White/Red) 3c** -- unterstuetzt schwarz, weiss und rot als Akzentfarbe.
+
+Rot wird fuer Warnungen und Alerts verwendet (z.B. "GIESSEN!" bei Pflanzen, Regen-Warnungen).
+
+## Server starten
+
+```bash
+cd docker/prod
+
+# APP_KEY generieren (einmalig)
+echo "APP_KEY=base64:$(openssl rand -base64 32)" > .env
+
+# Lokales Image bauen (mit BWR-Support)
+docker compose build
+
+# Starten
+docker compose up -d
+```
+
+Server laeuft auf `http://localhost:4567`.
+
+## Plugins
+
+Eigene Plugins im `plugins/` Ordner. Import via ZIP in LaraPaper unter Plugins & Recipes.
+
+| Plugin | Beschreibung | Datenquelle |
+|--------|-------------|-------------|
+| **MiFlora Pflanzen** | Moisture, Temp, Lux, Battery, Sparkline Charts, Giess-Schwelle (rot) | MiFlora Dashboard `:8420` |
+| **AI Fitness Auslastung** | Live-%, Area Chart (heute vs. Durchschnitt), Beste Zeit | Dashboard API `/api/gym` |
+| **Fitness & Health** | Schritte, HR, letztes Workout, Wochen-Summary | Garmin Connect via `/api/fitness/summary` |
+| **Schlaf-Analyse** | Score, Dauer, Hypnogramm (Tief/Leicht/REM/Wach Timeline) | Garmin Connect via `/api/fitness/summary` |
+| **Wetter Koeln** | Temperatur-Chart, Regen-Balken, Kita Bring/Abhol-Zeitfenster | OpenMeteo via `/api/weather` |
+
+### Plugin Design-Regeln (e-ink)
+
+- Kein Grau -- alles schwarz auf weiss, Rot nur als Akzent
+- Keine Emojis -- Text-Labels oder invertierte Badges
+- SVG nie mit `preserveAspectRatio="none"` -- verzerrt alles
+- Immer separate Templates: `full.liquid` (800x480) + `half_horizontal.liquid` (800x240)
+- `name` (nicht `label`) in settings.yml custom_fields
+
+### Plugin erstellen
+
+```
+plugins/mein-plugin/
+  settings.yml          # Name, Polling-URL, Refresh-Intervall
+  full.liquid            # Template fuer 800x480
+  half_horizontal.liquid # Template fuer 800x240 (optional)
+```
+
+ZIP erstellen und in LaraPaper importieren:
+```bash
+cd plugins/mein-plugin
+zip -r ../mein-plugin.zip settings.yml full.liquid half_horizontal.liquid
+```
+
+## Firmware
+
+Siehe [usetrmnl/firmware](https://github.com/usetrmnl/firmware) mit Patches fuer unser 3-Farben Waveshare Panel. Details zu Pin-Mapping, Treiber-Patches und Flashing in der Firmware-Dokumentation.
+
+---
+
+## LaraPaper (Upstream)
+
+Alles unterhalb ist die Original LaraPaper Dokumentation.
+
+---
+
 ## LaraPaper (PHP/Laravel)
 
 [![tests](https://github.com/usetrmnl/larapaper/actions/workflows/test.yml/badge.svg)](https://github.com/usetrmnl/larapaper/actions/workflows/test.yml)
