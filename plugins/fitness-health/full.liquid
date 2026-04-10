@@ -1,6 +1,6 @@
 <div class="layout layout--col h--full" style="padding: 10px 16px;">
 
-  {% if fitness.available == false %}
+  {% if available == false %}
   <div class="flex flex--center-x flex--center-y grow">
     <div style="font-size: 24px; font-weight: 700;">Keine Fitness-Daten</div>
   </div>
@@ -10,25 +10,25 @@
   <div class="flex flex--row flex--between flex--center-y" style="margin-bottom: 8px;">
     <div class="flex flex--row flex--center-y gap--medium">
       <div>
-        <div style="font-size: 40px; font-weight: 700; line-height: 1; color: #000;">{{ fitness.daily.steps | default: "--" }}</div>
-        <div style="font-size: 14px; font-weight: 600; color: #000;">Schritte / {{ fitness.daily.distance_km | default: "0" }} km</div>
+        <div style="font-size: 40px; font-weight: 700; line-height: 1; color: #000;">{{ daily.steps | default: "--" }}</div>
+        <div style="font-size: 14px; font-weight: 600; color: #000;">Schritte / {{ daily.distance_km | default: "0" }} km</div>
       </div>
       <div style="border-left: 2px solid #000; padding-left: 12px;">
-        <div style="font-size: 36px; font-weight: 700; line-height: 1; color: #000;">{{ fitness.daily.active_calories | default: 0 | floor }}</div>
+        <div style="font-size: 36px; font-weight: 700; line-height: 1; color: #000;">{{ daily.active_calories | default: 0 | floor }}</div>
         <div style="font-size: 13px; font-weight: 700; color: #000;">kcal aktiv</div>
       </div>
     </div>
     <div class="flex flex--row gap--medium" style="font-size: 13px; font-weight: 600; color: #000;">
       <div style="text-align: center;">
-        <div style="font-size: 24px; font-weight: 700;">{{ fitness.daily.resting_hr | default: "--" }}</div>
+        <div style="font-size: 24px; font-weight: 700;">{{ daily.resting_hr | default: "--" }}</div>
         <div>Ruhe</div>
       </div>
       <div style="text-align: center;">
-        <div style="font-size: 24px; font-weight: 700;">{{ fitness.daily.min_hr | default: "--" }}</div>
+        <div style="font-size: 24px; font-weight: 700;">{{ daily.min_hr | default: "--" }}</div>
         <div>Min</div>
       </div>
       <div style="text-align: center;">
-        <div style="font-size: 24px; font-weight: 700;">{{ fitness.daily.max_hr | default: "--" }}</div>
+        <div style="font-size: 24px; font-weight: 700;">{{ daily.max_hr | default: "--" }}</div>
         <div>Max</div>
       </div>
     </div>
@@ -39,46 +39,46 @@
   <!-- Bottom: Workout + Week side by side -->
   <div class="flex flex--row" style="margin-top: 8px;">
 
-    {% if fitness.last_activity %}
+    {% if last_activity %}
     <div class="flex flex--col" style="flex: 1;">
       <div style="font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #000;">LETZTES WORKOUT</div>
-      <div style="font-size: 24px; font-weight: 700; color: #000; margin-top: 4px;">{{ fitness.last_activity.name }}</div>
+      <div style="font-size: 24px; font-weight: 700; color: #000; margin-top: 4px;">{{ last_activity.name }}</div>
       <div style="font-size: 15px; font-weight: 600; color: #000; margin-top: 4px;">
-        {{ fitness.last_activity.duration_min }} min
-        {% if fitness.last_activity.distance_km > 0 %} / {{ fitness.last_activity.distance_km }} km{% endif %}
-        / {{ fitness.last_activity.calories | floor }} kcal
+        {{ last_activity.duration_min }} min
+        {% if last_activity.distance_km > 0 %} / {{ last_activity.distance_km }} km{% endif %}
+        / {{ last_activity.calories | floor }} kcal
       </div>
       <div style="font-size: 14px; font-weight: 600; color: #000; margin-top: 2px;">
-        HF {{ fitness.last_activity.avg_hr | floor }} avg / {{ fitness.last_activity.max_hr | floor }} max
+        HF {{ last_activity.avg_hr | floor }} avg / {{ last_activity.max_hr | floor }} max
       </div>
       <div style="font-size: 12px; font-weight: 600; color: #000; margin-top: 2px;">
-        {{ fitness.last_activity.start_time | truncate: 16, "" }}
+        {{ last_activity.start_time | truncate: 16, "" }}
       </div>
     </div>
     {% endif %}
 
     <div class="flex flex--col" style="border-left: 2px solid #000; padding-left: 16px; flex: 1;">
       <div style="font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #000;">WOCHE</div>
-      {% if fitness.week_summary %}
+      {% if week_summary %}
       <div class="flex flex--row gap--medium" style="margin-top: 8px;">
         <div style="text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: #000;">{{ fitness.week_summary.activities_count }}</div>
+          <div style="font-size: 32px; font-weight: 700; color: #000;">{{ week_summary.activities_count }}</div>
           <div style="font-size: 11px; font-weight: 600; color: #000;">Workouts</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: #000;">{{ fitness.week_summary.total_duration_min }}</div>
+          <div style="font-size: 32px; font-weight: 700; color: #000;">{{ week_summary.total_duration_min }}</div>
           <div style="font-size: 11px; font-weight: 600; color: #000;">Minuten</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: #000;">{{ fitness.week_summary.zone2_minutes }}</div>
+          <div style="font-size: 32px; font-weight: 700; color: #000;">{{ week_summary.zone2_minutes }}</div>
           <div style="font-size: 11px; font-weight: 600; color: #000;">Zone 2</div>
         </div>
       </div>
       {% endif %}
 
-      {% if fitness.hr_zones %}
+      {% if hr_zones %}
       <div style="margin-top: auto; font-size: 12px; font-weight: 600; color: #000; border-top: 1px solid #000; padding-top: 4px;">
-        Z2: {{ fitness.hr_zones.zone2_low }}-{{ fitness.hr_zones.zone2_high }} bpm
+        Z2: {{ hr_zones.zone2_low }}-{{ hr_zones.zone2_high }} bpm
       </div>
       {% endif %}
     </div>
@@ -90,5 +90,5 @@
 
 <div class="title_bar">
   <span class="title">Fitness</span>
-  <span class="instance">{{ fitness.date }}</span>
+  <span class="instance">{{ date }}</span>
 </div>

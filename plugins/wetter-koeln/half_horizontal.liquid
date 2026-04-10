@@ -1,7 +1,6 @@
 <div class="flex flex--row h--full" style="padding: 6px 10px;">
 
-  {% assign w = weather %}
-  {% if w.available == false %}
+  {% if available == false %}
   <div class="flex flex--center-x flex--center-y grow">
     <div style="font-size: 18px; font-weight: 700;">Keine Wetter-Daten</div>
   </div>
@@ -9,21 +8,20 @@
 
   <!-- Left: Info -->
   <div class="flex flex--col flex--center-y" style="width: 130px;">
-    <div style="font-size: 36px; font-weight: 700; line-height: 1; color: #000;">{{ w.current.temp | floor }}°</div>
-    <div style="font-size: 12px; font-weight: 700; color: #000;">{{ w.current.description }}</div>
-    <div style="font-size: 11px; font-weight: 600; color: #000; margin-top: 4px;">{{ w.daily.today.min | floor }}° / {{ w.daily.today.max | floor }}°</div>
-    <div style="font-size: 11px; font-weight: 600; color: #000;">Regen {{ w.daily.today.precipitation_prob }}%</div>
-    {% if w.bike_forecast %}
-    <div style="border: 2px solid #000; padding: 2px 4px; margin-top: 6px; text-align: center;{% if w.bike_forecast.status == 'wet' %} background: #000; color: #fff;{% endif %}">
-      <div style="font-size: 9px; font-weight: 700;">{{ w.bike_forecast.label }}</div>
-      <div style="font-size: 11px; font-weight: 700;">{{ w.bike_forecast.message }}</div>
+    <div style="font-size: 36px; font-weight: 700; line-height: 1; color: #000;">{{ current.temp | floor }}°</div>
+    <div style="font-size: 12px; font-weight: 700; color: #000;">{{ current.description }}</div>
+    <div style="font-size: 11px; font-weight: 600; color: #000; margin-top: 4px;">{{ daily.today.min | floor }}° / {{ daily.today.max | floor }}°</div>
+    <div style="font-size: 11px; font-weight: 600; color: #000;">Regen {{ daily.today.precipitation_prob }}%</div>
+    {% if bike_forecast %}
+    <div style="border: 2px solid #000; padding: 2px 4px; margin-top: 6px; text-align: center;{% if bike_forecast.status == 'wet' %} background: #000; color: #fff;{% endif %}">
+      <div style="font-size: 9px; font-weight: 700;">{{ bike_forecast.label }}</div>
+      <div style="font-size: 11px; font-weight: 700;">{{ bike_forecast.message }}</div>
     </div>
     {% endif %}
   </div>
 
   <!-- Right: Chart -->
   <div style="flex: 1; padding-left: 8px; height: 100%; border-left: 2px solid #000;">
-    {% assign hourly = w.hourly %}
     {% if hourly and hourly.size > 0 %}
 
     {% assign min_temp = 100 %}
@@ -36,13 +34,14 @@
     {% assign temp_range = max_temp | minus: min_temp %}
     {% if temp_range == 0 %}{% assign temp_range = 1 %}{% endif %}
 
-    <svg viewBox="0 0 700 200" style="width: 100%; height: 100%; display: block;">
-      <rect x="{{ 8 | times: 29 | plus: 10 }}" y="0" width="29" height="160" fill="#000" opacity="0.06" />
-      <rect x="{{ 15 | times: 29 | plus: 10 }}" y="0" width="58" height="160" fill="#000" opacity="0.06" />
+    {% assign first_time = hourly[0].time | split: ":" %}
+    {% assign start_hour = first_time[0] | plus: 0 %}
+    {% assign px_per_hour = 29 %}
 
+    <svg viewBox="0 0 700 200" style="width: 100%; height: 100%; display: block;">
       {% for h in hourly %}
         {% assign i = forloop.index0 %}
-        {% assign bx = i | times: 29 | plus: 10 %}
+        {% assign bx = i | times: px_per_hour | plus: 10 %}
         {% assign bh = h.precipitation_prob | times: 80 | divided_by: 100 %}
         {% assign by = 160 | minus: bh %}
         {% if h.precipitation_prob > 5 %}
@@ -50,13 +49,13 @@
         {% endif %}
       {% endfor %}
 
-      <polyline fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" points="{% for h in hourly %}{% assign i = forloop.index0 %}{% assign px = i | times: 29 | plus: 21 %}{% assign t = h.temp | floor %}{% assign ty = t | minus: min_temp | times: 120 | divided_by: temp_range %}{% assign py = 150 | minus: ty %}{{ px }},{{ py }} {% endfor %}" />
+      <polyline fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" points="{% for h in hourly %}{% assign i = forloop.index0 %}{% assign px = i | times: px_per_hour | plus: 21 %}{% assign t = h.temp | floor %}{% assign ty = t | minus: min_temp | times: 120 | divided_by: temp_range %}{% assign py = 150 | minus: ty %}{{ px }},{{ py }} {% endfor %}" />
 
       {% for h in hourly %}
         {% assign i = forloop.index0 %}
         {% assign mod4 = i | modulo: 4 %}
         {% if mod4 == 0 %}
-          {% assign px = i | times: 29 | plus: 21 %}
+          {% assign px = i | times: px_per_hour | plus: 21 %}
           {% assign t = h.temp | floor %}
           {% assign ty = t | minus: min_temp | times: 120 | divided_by: temp_range %}
           {% assign py = 150 | minus: ty | minus: 7 %}
@@ -65,10 +64,14 @@
       {% endfor %}
 
       <line x1="10" y1="161" x2="700" y2="161" stroke="#000" stroke-width="1" />
-      {% for i in (0..5) %}
-        {% assign hour = i | times: 4 %}
-        {% assign tx = hour | times: 29 | plus: 21 %}
-        <text x="{{ tx }}" y="176" text-anchor="middle" style="font-size: 9px; font-weight: 600;">{{ hour }}</text>
+      {% for h in hourly %}
+        {% assign i = forloop.index0 %}
+        {% assign mod4 = i | modulo: 4 %}
+        {% if mod4 == 0 %}
+          {% assign tx = i | times: px_per_hour | plus: 21 %}
+          {% assign hour_parts = h.time | split: ":" %}
+          <text x="{{ tx }}" y="176" text-anchor="middle" style="font-size: 9px; font-weight: 600;">{{ hour_parts[0] | plus: 0 }}</text>
+        {% endif %}
       {% endfor %}
     </svg>
     {% endif %}
@@ -79,5 +82,5 @@
 
 <div class="title_bar">
   <span class="title">Wetter</span>
-  <span class="instance">{{ weather.updated_at | date: "%H:%M" }}</span>
+  <span class="instance">{{ updated_at | date: "%H:%M" }}</span>
 </div>

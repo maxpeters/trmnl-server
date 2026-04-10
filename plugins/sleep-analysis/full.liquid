@@ -1,12 +1,12 @@
 <div class="layout layout--col h--full" style="padding: 10px 16px;">
 
-  {% if fitness.available == false or fitness.sleep == nil %}
+  {% if available == false or sleep == nil %}
   <div class="flex flex--center-x flex--center-y grow">
     <div style="font-size: 24px; font-weight: 700; color: #000;">Keine Schlaf-Daten</div>
   </div>
   {% else %}
 
-  {% assign s = fitness.sleep %}
+  {% assign s = sleep %}
 
   <!-- Top: Score + Duration + Phases compact -->
   <div class="flex flex--row flex--between flex--center-y" style="margin-bottom: 8px;">
@@ -87,5 +87,5 @@
 
 <div class="title_bar">
   <span class="title">Schlaf</span>
-  <span class="instance">{{ fitness.date }}</span>
+  <span class="instance">{{ date }}</span>
 </div>

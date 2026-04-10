@@ -2,18 +2,18 @@
   <div class="flex flex--col flex--center-y" style="width: 140px;">
     <div style="font-size: 14px; font-weight: 700; letter-spacing: 1px;">AI FITNESS</div>
     <div style="font-size: 14px; font-weight: 600;">Agnesviertel</div>
-    <div style="font-size: 80px; font-weight: 700; line-height: 1; margin: 8px 0;">{{ gym.occupancy_pct }}%</div>
+    <div style="font-size: 80px; font-weight: 700; line-height: 1; margin: 8px 0;">{{ occupancy_pct }}%</div>
     <div style="font-size: 16px; font-weight: 700;">
-      {% if gym.occupancy_pct <= 5 %}Fast leer
-      {% elsif gym.occupancy_pct <= 15 %}Ruhig
-      {% elsif gym.occupancy_pct <= 25 %}Moderat
-      {% elsif gym.occupancy_pct <= 40 %}Voll
+      {% if occupancy_pct <= 5 %}Fast leer
+      {% elsif occupancy_pct <= 15 %}Ruhig
+      {% elsif occupancy_pct <= 25 %}Moderat
+      {% elsif occupancy_pct <= 40 %}Voll
       {% else %}Sehr voll
       {% endif %}
     </div>
     {% assign best_hour = 0 %}
     {% assign best_avg = 100 %}
-    {% for a in gym.average %}
+    {% for a in average %}
       {% if a.hour >= 8 and a.hour <= 21 %}
         {% if a.avg_percentage < best_avg %}
           {% assign best_avg = a.avg_percentage %}
@@ -27,8 +27,8 @@
   </div>
 
   <div style="flex: 1; padding-left: 8px; height: 100%;">
-    {% assign hours = gym.today %}
-    {% assign avg = gym.average %}
+    {% assign hours = today %}
+    {% assign avg = average %}
     {% if avg and avg.size > 0 %}
     {% assign max_pct = 25 %}
     {% for h in hours %}
@@ -48,13 +48,13 @@
       {% endif %}
 
       {% comment %} Current position: dot + vertical line + label {% endcomment %}
-      {% if gym.current %}
-        {% assign cx = gym.current.hour | minus: 6 | times: 25 | plus: 10 %}
-        {% assign cy = gym.current.percentage | times: 210 | divided_by: max_pct %}
+      {% if current %}
+        {% assign cx = current.hour | minus: 6 | times: 25 | plus: 10 %}
+        {% assign cy = current.percentage | times: 210 | divided_by: max_pct %}
         {% assign cpy = 230 | minus: cy %}
         <line x1="{{ cx }}" y1="{{ cpy }}" x2="{{ cx }}" y2="230" stroke="#000" stroke-width="1.5" stroke-dasharray="4,4" />
         <circle cx="{{ cx }}" cy="{{ cpy }}" r="8" fill="#fff" stroke="#000" stroke-width="3" />
-        <text x="{{ cx }}" y="250" text-anchor="middle" style="font-size: 16px; font-weight: 700;">{{ gym.current.hour }}:00</text>
+        <text x="{{ cx }}" y="250" text-anchor="middle" style="font-size: 16px; font-weight: 700;">{{ current.hour }}:00</text>
       {% endif %}
 
       {% comment %} X axis {% endcomment %}
@@ -74,5 +74,5 @@
 
 <div class="title_bar">
   <span class="title">AI Fitness</span>
-  <span class="instance">{{ gym.updated_at | date: "%H:%M" }}</span>
+  <span class="instance">{{ updated_at | date: "%H:%M" }}</span>
 </div>

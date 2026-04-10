@@ -1,12 +1,12 @@
 <div class="flex flex--row h--full" style="padding: 6px 10px;">
 
-  {% if fitness.available == false or fitness.sleep == nil %}
+  {% if available == false or sleep == nil %}
   <div class="flex flex--center-x flex--center-y grow">
     <div style="font-size: 18px; font-weight: 700; color: #000;">Keine Daten</div>
   </div>
   {% else %}
 
-  {% assign s = fitness.sleep %}
+  {% assign s = sleep %}
 
   <!-- Left: Score hero -->
   <div class="flex flex--col flex--center-y" style="width: 120px; text-align: center;">
@@ -103,5 +103,5 @@
 
 <div class="title_bar">
   <span class="title">Schlaf</span>
-  <span class="instance">{{ fitness.date }}</span>
+  <span class="instance">{{ date }}</span>
 </div>
