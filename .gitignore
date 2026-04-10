@@ -43,3 +43,4 @@ yarn-error.log
 /.junie
 /.agents
 /.github/skills
+docker/prod/.env
