@@ -2,12 +2,12 @@
   <div class="flex flex--col flex--center-y" style="width: 140px;">
     <div style="font-size: 14px; font-weight: 700; letter-spacing: 1px;">AI FITNESS</div>
     <div style="font-size: 14px; font-weight: 600;">Agnesviertel</div>
-    <div style="font-size: 80px; font-weight: 700; line-height: 1; margin: 8px 0;">{{ occupancy_pct }}%</div>
+    <div style="font-size: 80px; font-weight: 700; line-height: 1; margin: 8px 0;">{{ current.percentage }}%</div>
     <div style="font-size: 16px; font-weight: 700;">
-      {% if occupancy_pct <= 5 %}Fast leer
-      {% elsif occupancy_pct <= 15 %}Ruhig
-      {% elsif occupancy_pct <= 25 %}Moderat
-      {% elsif occupancy_pct <= 40 %}Voll
+      {% if current.percentage <= 5 %}Fast leer
+      {% elsif current.percentage <= 15 %}Ruhig
+      {% elsif current.percentage <= 25 %}Moderat
+      {% elsif current.percentage <= 40 %}Voll
       {% else %}Sehr voll
       {% endif %}
     </div>

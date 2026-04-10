@@ -45,7 +45,7 @@
         {% assign bh = h.precipitation_prob | times: 80 | divided_by: 100 %}
         {% assign by = 160 | minus: bh %}
         {% if h.precipitation_prob > 5 %}
-        <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="#000" opacity="0.2" />
+        <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="none" stroke="#000" stroke-width="1.5" />
         {% endif %}
       {% endfor %}
 

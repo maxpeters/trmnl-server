@@ -79,7 +79,7 @@
         {% if h.precipitation_prob > 5 %}
           {% assign bh = h.precipitation_prob %}
           {% assign by = 200 | minus: bh %}
-          <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="#000" opacity="0.2" />
+          <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="none" stroke="#000" stroke-width="1.5" />
           {% if h.precipitation_prob > 40 %}
             <text x="{{ bx | plus: 11 }}" y="{{ by | minus: 3 }}" text-anchor="middle" style="font-size: 8px; font-weight: 700;">{{ h.precipitation_prob }}%</text>
           {% endif %}
@@ -116,7 +116,7 @@
       {% comment %} Legend {% endcomment %}
       <line x1="20" y1="240" x2="45" y2="240" stroke="#000" stroke-width="3" />
       <text x="50" y="243" style="font-size: 9px; font-weight: 600;">Temp</text>
-      <rect x="100" y="234" width="12" height="12" fill="#000" opacity="0.2" />
+      <rect x="100" y="234" width="12" height="12" fill="none" stroke="#000" stroke-width="1.5" />
       <text x="116" y="243" style="font-size: 9px; font-weight: 600;">Regen%</text>
       <rect x="180" y="234" width="12" height="12" fill="url(#dots)" opacity="0.5" />
       <text x="196" y="243" style="font-size: 9px; font-weight: 600;">Kita</text>
