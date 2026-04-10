@@ -1,0 +1,110 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source "../views";
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --color-zinc-50: var(--color-neutral-50);
+    --color-zinc-100: var(--color-neutral-100);
+    --color-zinc-200: var(--color-neutral-200);
+    --color-zinc-300: var(--color-neutral-300);
+    --color-zinc-400: var(--color-neutral-400);
+    --color-zinc-500: var(--color-neutral-500);
+    --color-zinc-600: var(--color-neutral-600);
+    --color-zinc-700: var(--color-neutral-700);
+    --color-zinc-800: var(--color-neutral-800);
+    --color-zinc-900: var(--color-neutral-900);
+    --color-zinc-950: var(--color-neutral-950);
+}
+
+@theme {
+    /*--color-accent: var(--color-orange-500);*/
+    --color-accent: rgb(224 91 68);
+    --color-accent-content: var(--color-orange-600);
+    --color-accent-foreground: var(--color-white);
+}
+
+@layer theme {
+    .dark {
+        /*--color-accent: var(--color-orange-400);*/
+        --color-accent: rgb(224 91 68);
+        --color-accent-content: rgb(224 91 68);
+        /*--color-accent-content: var(--color-orange-400);*/
+        --color-accent-foreground: var(--color-orange-950);
+    }
+}
+
+
+@layer base {
+
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+[data-flux-field] {
+    @apply grid gap-2;
+}
+
+[data-flux-label] {
+    @apply !mb-0 !leading-tight;
+}
+
+[data-flux-description] a {
+    @apply text-accent underline hover:opacity-80;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+}
+
+/* \[:where(&)\]:size-4 {
+    @apply size-4;
+} */
+
+@layer components {
+    /* standard container for app */
+    .styled-container,
+    .tab-button {
+        @apply rounded-xl border bg-white dark:bg-stone-950 dark:border-zinc-700 text-stone-800 shadow-xs;
+    }
+
+    .tab-button {
+        @apply flex items-center gap-2 px-4 py-2 text-sm font-medium;
+        @apply rounded-b-none shadow-none bg-inherit;
+
+        /* This makes the button sit slightly over the box border */
+        margin-bottom: -1px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .tab-button.is-active {
+        @apply text-zinc-700 dark:text-zinc-300;
+        @apply border-b-white dark:border-b-zinc-800;
+
+        /* Z-index 10 ensures the bottom border of the tab hides the top border of the box */
+        z-index: 10;
+    }
+
+    .tab-button:not(.is-active) {
+        @apply text-zinc-500 border-transparent;
+    }
+
+    .tab-button:not(.is-active):hover {
+        @apply text-zinc-700 dark:text-zinc-300;
+        @apply border-zinc-300 dark:border-zinc-700;
+        cursor: pointer;
+    }
+}
