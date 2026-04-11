@@ -14,7 +14,7 @@
     {% assign best_hour = 0 %}
     {% assign best_avg = 100 %}
     {% for a in average %}
-      {% if a.hour >= 8 and a.hour <= 21 %}
+      {% if a.hour >= 7 and a.hour <= 21 %}
         {% if a.avg_percentage < best_avg %}
           {% assign best_avg = a.avg_percentage %}
           {% assign best_hour = a.hour %}

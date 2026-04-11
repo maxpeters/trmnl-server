@@ -92,7 +92,8 @@
       {% comment %} Temperature labels every 3h {% endcomment %}
       {% for h in hourly %}
         {% assign i = forloop.index0 %}
-        {% if i == 0 or forloop.index0 | modulo: 3 == 0 %}
+        {% assign mod3 = forloop.index0 | modulo: 3 %}
+        {% if i == 0 or mod3 == 0 %}
           {% assign px = i | times: px_per_hour | plus: chart_left | plus: 11 %}
           {% assign t = h.temp | floor %}
           {% assign ty = t | minus: min_temp | times: 150 | divided_by: temp_range %}
