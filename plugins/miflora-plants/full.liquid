@@ -35,7 +35,11 @@
         <div class="flex flex--row flex--between" style="font-size: 13px; font-weight: 600;">
           <span>{{ plant.latest_reading.temperature }}°C</span>
           <span>{{ plant.latest_reading.light }} lux</span>
+          {% if plant.latest_reading.battery <= 10 %}
+          <span style="background: red; color: #fff; padding: 0 3px; font-weight: 700;">{{ plant.latest_reading.battery }}%</span>
+          {% else %}
           <span>{{ plant.latest_reading.battery }}%</span>
+          {% endif %}
         </div>
         {% if plant.prediction %}
         <div class="text--center" style="margin-top: 4px;">

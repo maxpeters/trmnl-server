@@ -52,7 +52,7 @@
         {% assign cx = current.hour | minus: 6 | times: 25 | plus: 10 %}
         {% assign cy = current.percentage | times: 210 | divided_by: max_pct %}
         {% assign cpy = 230 | minus: cy %}
-        <circle cx="{{ cx }}" cy="{{ cpy }}" r="8" fill="#000" />
+        <circle cx="{{ cx }}" cy="{{ cpy }}" r="8" fill="red" />
       {% endif %}
 
       {% comment %} X axis {% endcomment %}
