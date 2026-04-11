@@ -47,10 +47,11 @@
       <polyline fill="none" stroke="#000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" points="{% for h in hours %}{% assign hx = h.hour | minus: 6 | times: 25 | plus: 10 %}{% assign hy = h.percentage | times: 210 | divided_by: max_pct %}{% assign hpy = 230 | minus: hy %}{{ hx }},{{ hpy }} {% endfor %}" />
       {% endif %}
 
-      {% comment %} Current position: dot + vertical line + label {% endcomment %}
-      {% if current %}
-        {% assign cx = current.hour | minus: 6 | times: 25 | plus: 10 %}
-        {% assign cy = current.percentage | times: 210 | divided_by: max_pct %}
+      {% comment %} Current position: red dot on last data point {% endcomment %}
+      {% if hours and hours.size > 0 %}
+        {% assign last_h = hours | last %}
+        {% assign cx = last_h.hour | minus: 6 | times: 25 | plus: 10 %}
+        {% assign cy = last_h.percentage | times: 210 | divided_by: max_pct %}
         {% assign cpy = 230 | minus: cy %}
         <circle cx="{{ cx }}" cy="{{ cpy }}" r="8" fill="red" />
       {% endif %}

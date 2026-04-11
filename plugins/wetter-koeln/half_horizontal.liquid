@@ -13,7 +13,7 @@
     <div style="font-size: 11px; font-weight: 600; color: #000; margin-top: 4px;">{{ daily.today.min | floor }}° / {{ daily.today.max | floor }}°</div>
     <div style="font-size: 11px; font-weight: 600; color: #000;">Regen {{ daily.today.precipitation_prob }}%</div>
     {% if bike_forecast %}
-    <div style="border: 2px solid #000; padding: 2px 4px; margin-top: 6px; text-align: center;{% if bike_forecast.status == 'wet' %} background: #000; color: #fff;{% endif %}">
+    <div style="border: 2px solid #000; padding: 2px 4px; margin-top: 6px; text-align: center;{% if bike_forecast.status == 'wet' %} background: red; color: #fff;{% endif %}">
       <div style="font-size: 9px; font-weight: 700;">{{ bike_forecast.label }}</div>
       <div style="font-size: 11px; font-weight: 700;">{{ bike_forecast.message }}</div>
     </div>

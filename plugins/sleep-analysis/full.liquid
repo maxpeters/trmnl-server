@@ -25,7 +25,7 @@
           {% if s.sleep_score >= 85 %}Sehr gut
           {% elsif s.sleep_score >= 70 %}Gut
           {% elsif s.sleep_score >= 50 %}Maessig
-          {% else %}Schlecht
+          {% else %}<span style="color: red;">Schlecht</span>
           {% endif %}
         </div>
       </div>
