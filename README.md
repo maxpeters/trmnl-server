@@ -74,6 +74,25 @@ cd plugins/mein-plugin
 zip -r ../mein-plugin.zip settings.yml full.liquid half_horizontal.liquid
 ```
 
+### Plugin Preview / visueller Test
+
+Lokale Plugin-Aenderungen lassen sich direkt gegen den laufenden LaraPaper-Container rendern:
+
+```bash
+cd plugins
+python3 preview.py --list
+python3 preview.py wetter-koeln
+python3 preview.py gym-occupancy half_horizontal
+```
+
+Das Script:
+- erkennt den laufenden App-Container automatisch (oder nimmt `--container`)
+- schreibt die lokalen Liquid-Templates direkt in den Container
+- rendert ueber LaraPaper selbst
+- speichert `.preview_<plugin>_<size>.html` fuer die visuelle Kontrolle
+
+Das ist kein vollautomatischer Device-E2E-Test, aber ein sehr naher visueller Server-Render-Test fuer Plugin-Entwicklung.
+
 ## Firmware
 
 Siehe [usetrmnl/firmware](https://github.com/usetrmnl/firmware) mit Patches fuer unser 3-Farben Waveshare Panel. Details zu Pin-Mapping, Treiber-Patches und Flashing in der Firmware-Dokumentation.
