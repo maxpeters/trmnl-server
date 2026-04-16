@@ -46,6 +46,12 @@ yarn-error.log
 docker/prod/.env
 /dist
 /plugins/.preview_*.html
+/plugins/.preview_*.png
+/plugins/.preview_*.mjs
+/plugins/.preview_*.css
+/plugins/.preview_*.js
+/plugins/trmnl_plugins.css
+/plugins/trmnl_plugins.js
 /plugins/.venv/
 /trmnl-server.log
 /trmnl.db
