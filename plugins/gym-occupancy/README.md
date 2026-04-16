@@ -32,3 +32,4 @@ Live occupancy percentage for AI Fitness Agnesviertel with today vs. average cha
 
 - Gym name "Agnesviertel" is hardcoded in full template.
 - Chart x-axis starts at 7:00 (gym opening time).
+- Now marker uses TRMNL render timezone context instead of a fixed UTC offset hack.

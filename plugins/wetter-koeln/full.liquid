@@ -119,8 +119,8 @@
         {% endfor %}
 
         {% comment %} NOW marker {% endcomment %}
-        {% assign current_hour_raw = 'now' | date: '%H' | plus: 2 %}
-        {% assign current_hour = current_hour_raw | modulo: 24 %}
+        {% assign current_local_timestamp = trmnl.system.timestamp_utc | plus: trmnl.user.utc_offset %}
+        {% assign current_hour = current_local_timestamp | date: '%H' | plus: 0 %}
         {% assign now_x = current_hour | times: 30 | plus: 10 %}
         <line x1="{{ now_x }}" y1="14" x2="{{ now_x }}" y2="279" stroke="#fff" stroke-width="5" />
         <line x1="{{ now_x }}" y1="14" x2="{{ now_x }}" y2="279" stroke="red" stroke-width="1.5" stroke-dasharray="4,3" />

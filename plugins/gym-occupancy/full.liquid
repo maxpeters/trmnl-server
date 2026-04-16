@@ -66,8 +66,8 @@
     {% assign axis_x2 = data_end_hour | minus: 7 | times: 25 | plus: 10 %}
 
     {% comment %} Current time for now-marker {% endcomment %}
-    {% assign now_hour = 'now' | date: '%H' | plus: 2 %}
-    {% if now_hour > 23 %}{% assign now_hour = now_hour | modulo: 24 %}{% endif %}
+    {% assign now_timestamp = trmnl.system.timestamp_utc | plus: trmnl.user.utc_offset %}
+    {% assign now_hour = now_timestamp | date: '%H' | plus: 0 %}
 
     <svg viewBox="-30 0 470 280" style="width:100%;height:100%;display:block;">
       <defs>
