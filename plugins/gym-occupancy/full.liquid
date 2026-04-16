@@ -44,7 +44,16 @@
 
   <div style="flex: 1; padding-left: 8px; height: 100%;">
     {% if avg and avg.size > 0 %}
-    {% assign max_pct = 40 %}
+    {% comment %} Dynamic Y-axis: find max across today + average {% endcomment %}
+    {% assign max_val = 0 %}
+    {% for h in hours %}
+      {% if h.percentage > max_val %}{% assign max_val = h.percentage %}{% endif %}
+    {% endfor %}
+    {% for a in avg %}
+      {% if a.avg_percentage > max_val %}{% assign max_val = a.avg_percentage %}{% endif %}
+    {% endfor %}
+    {% if max_val < 10 %}{% assign max_val = 10 %}{% endif %}
+    {% assign max_pct = max_val | plus: 9 | divided_by: 10 | times: 10 %}
 
     {% comment %} Data range for dynamic x-axis {% endcomment %}
     {% assign data_end_hour = 7 %}
@@ -67,13 +76,14 @@
         <clipPath id="chart-clip"><rect x="-30" y="16" width="500" height="218" /></clipPath>
       </defs>
 
-      {% comment %} Y-axis labels (0% to 40%) {% endcomment %}
-      {% assign y40_val = 40 | times: 210 | divided_by: max_pct %}
-      {% assign y40 = 230 | minus: y40_val | plus: 4 %}
-      {% assign y20_val = 20 | times: 210 | divided_by: max_pct %}
-      {% assign y20 = 230 | minus: y20_val | plus: 4 %}
-      <text x="6" y="{{ y40 }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">40%</text>
-      <text x="6" y="{{ y20 }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">20%</text>
+      {% comment %} Y-axis labels (0% to max_pct%) {% endcomment %}
+      {% assign y_top_val = max_pct | times: 210 | divided_by: max_pct %}
+      {% assign y_top = 230 | minus: y_top_val | plus: 4 %}
+      {% assign y_mid_pct = max_pct | divided_by: 2 %}
+      {% assign y_mid_val = y_mid_pct | times: 210 | divided_by: max_pct %}
+      {% assign y_mid = 230 | minus: y_mid_val | plus: 4 %}
+      <text x="6" y="{{ y_top }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">{{ max_pct }}%</text>
+      <text x="6" y="{{ y_mid }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">{{ y_mid_pct }}%</text>
       <text x="6" y="234" text-anchor="end" style="font-size: 10px; font-weight: 600;">0%</text>
 
       <g clip-path="url(#chart-clip)">
