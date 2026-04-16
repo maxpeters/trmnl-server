@@ -1,4 +1,5 @@
-<div class="layout layout--col h--full" style="padding: 10px 16px;">
+<div class="view view--full">
+<div class="layout layout--col" style="align-items: stretch; padding: 10px 16px;">
 
   {% if available == false or sleep == nil %}
   <div class="flex flex--center-x flex--center-y grow">
@@ -40,7 +41,7 @@
       {% assign rem_h = s.rem_sleep_min | divided_by: 60 %}
       {% assign rem_m = s.rem_sleep_min | modulo: 60 %}
       <div style="text-align: center;"><div style="font-size: 18px; font-weight: 700;">{{ rem_h }}h{{ rem_m }}m</div><div>REM</div></div>
-      <div style="text-align: center;"><div style="font-size: 18px; font-weight: 700;">{{ s.awake_min }}m</div><div>Wach</div></div>
+      <div style="text-align: center;"><div style="font-size: 18px; font-weight: 700; color: red;">{{ s.awake_min }}m</div><div style="color: red;">Wach</div></div>
     </div>
   </div>
 
@@ -54,17 +55,17 @@
       {% for p in s.phases %}
         {% assign pw = p.duration_min | times: 620 | divided_by: total_dur %}
         {% if pw < 2 %}{% assign pw = 2 %}{% endif %}
-        {% if p.phase == "deep" %}{% assign py = 185 %}
-        {% elsif p.phase == "light" %}{% assign py = 130 %}
-        {% elsif p.phase == "rem" %}{% assign py = 75 %}
-        {% else %}{% assign py = 20 %}
+        {% if p.phase == "deep" %}{% assign py = 185 %}{% assign pcolor = "#000" %}
+        {% elsif p.phase == "light" %}{% assign py = 130 %}{% assign pcolor = "#000" %}
+        {% elsif p.phase == "rem" %}{% assign py = 75 %}{% assign pcolor = "#000" %}
+        {% else %}{% assign py = 20 %}{% assign pcolor = "red" %}
         {% endif %}
-        <rect x="{{ px }}" y="{{ py }}" width="{{ pw }}" height="40" fill="#000" />
+        <rect x="{{ px }}" y="{{ py }}" width="{{ pw }}" height="40" fill="{{ pcolor }}" />
         {% assign px = px | plus: pw %}
       {% endfor %}
 
       {% comment %} Y axis labels {% endcomment %}
-      <text x="35" y="45" text-anchor="end" style="font-size: 14px; font-weight: 700;">Wach</text>
+      <text x="35" y="45" text-anchor="end" style="font-size: 14px; font-weight: 700; fill: red;">Wach</text>
       <text x="35" y="100" text-anchor="end" style="font-size: 14px; font-weight: 700;">REM</text>
       <text x="35" y="155" text-anchor="end" style="font-size: 14px; font-weight: 700;">Leicht</text>
       <text x="35" y="210" text-anchor="end" style="font-size: 14px; font-weight: 700;">Tief</text>
@@ -87,5 +88,6 @@
 
 <div class="title_bar">
   <span class="title">Schlaf</span>
-  <span class="instance">{{ date }}</span>
+  <span class="instance">{{ sleep.sleep_date | default: date | date: "%d.%m.%Y" }}</span>
+</div>
 </div>

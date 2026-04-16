@@ -1,4 +1,5 @@
-<div class="flex flex--row h--full" style="padding: 6px 10px;">
+<div class="view view--half_horizontal">
+<div class="layout layout--row" style="padding: 4px 10px; align-items: stretch; justify-content: flex-start;">
 
   {% if available == false or sleep == nil %}
   <div class="flex flex--center-x flex--center-y grow">
@@ -9,18 +10,18 @@
   {% assign s = sleep %}
 
   <!-- Left: Score hero -->
-  <div class="flex flex--col flex--center-y" style="width: 120px; text-align: center;">
-    <div style="font-size: 11px; font-weight: 700; letter-spacing: 1px; color: #000;">SCHLAF</div>
-    <div style="font-size: 32px; font-weight: 700; line-height: 1; color: #000;">
+  <div class="flex flex--col flex--center-y" style="width: 110px; text-align: center;">
+    <div style="font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #000;">SCHLAF</div>
+    <div style="font-size: 28px; font-weight: 700; line-height: 1; color: #000;">
       {% assign total_h = s.total_sleep_min | divided_by: 60 %}
       {% assign total_m = s.total_sleep_min | modulo: 60 %}
       {{ total_h }}h {{ total_m }}m
     </div>
-    <div style="font-size: 11px; font-weight: 600; color: #000;">
+    <div style="font-size: 10px; font-weight: 600; color: #000;">
       {{ s.start_time }} - {{ s.end_time }}
     </div>
-    <div style="font-size: 22px; font-weight: 700; line-height: 1; color: #000; margin-top: 4px;">{{ s.sleep_score }}</div>
-    <div style="font-size: 10px; font-weight: 700; color: #000;">
+    <div style="font-size: 18px; font-weight: 700; line-height: 1; color: #000; margin-top: 2px;">{{ s.sleep_score }}</div>
+    <div style="font-size: 9px; font-weight: 700; color: #000;">
       {% if s.sleep_score >= 85 %}Sehr gut
       {% elsif s.sleep_score >= 70 %}Gut
       {% elsif s.sleep_score >= 50 %}Maessig
@@ -30,13 +31,13 @@
   </div>
 
   <!-- Center: Phase breakdown -->
-  <div class="flex flex--col flex--center-y" style="border-left: 2px solid #000; padding-left: 10px; width: 170px;">
-    <div style="font-size: 10px; font-weight: 700; letter-spacing: 1px; color: #000; margin-bottom: 4px;">PHASEN</div>
+  <div class="flex flex--col flex--center-y" style="border-left: 2px solid #000; padding-left: 10px; width: 160px;">
+    <div style="font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #000; margin-bottom: 2px;">PHASEN</div>
 
     {% assign deep_h = s.deep_sleep_min | divided_by: 60 %}
     {% assign deep_m = s.deep_sleep_min | modulo: 60 %}
     {% assign deep_pct = s.deep_sleep_min | times: 100 | divided_by: s.total_sleep_min %}
-    <div class="flex flex--row flex--between" style="width: 100%; font-size: 13px; font-weight: 600; color: #000; padding: 2px 0; border-bottom: 1px solid #000;">
+    <div class="flex flex--row flex--between" style="width: 100%; font-size: 11px; font-weight: 600; color: #000; padding: 1px 0; border-bottom: 1px solid #000;">
       <span style="font-weight: 700;">Tief</span>
       <span>{{ deep_h }}h{{ deep_m }}m</span>
       <span style="font-weight: 700;">{{ deep_pct }}%</span>
@@ -45,7 +46,7 @@
     {% assign light_h = s.light_sleep_min | divided_by: 60 %}
     {% assign light_m = s.light_sleep_min | modulo: 60 %}
     {% assign light_pct = s.light_sleep_min | times: 100 | divided_by: s.total_sleep_min %}
-    <div class="flex flex--row flex--between" style="width: 100%; font-size: 13px; font-weight: 600; color: #000; padding: 2px 0; border-bottom: 1px solid #000;">
+    <div class="flex flex--row flex--between" style="width: 100%; font-size: 11px; font-weight: 600; color: #000; padding: 1px 0; border-bottom: 1px solid #000;">
       <span style="font-weight: 700;">Leicht</span>
       <span>{{ light_h }}h{{ light_m }}m</span>
       <span style="font-weight: 700;">{{ light_pct }}%</span>
@@ -54,16 +55,16 @@
     {% assign rem_h = s.rem_sleep_min | divided_by: 60 %}
     {% assign rem_m = s.rem_sleep_min | modulo: 60 %}
     {% assign rem_pct = s.rem_sleep_min | times: 100 | divided_by: s.total_sleep_min %}
-    <div class="flex flex--row flex--between" style="width: 100%; font-size: 13px; font-weight: 600; color: #000; padding: 2px 0; border-bottom: 1px solid #000;">
+    <div class="flex flex--row flex--between" style="width: 100%; font-size: 11px; font-weight: 600; color: #000; padding: 1px 0; border-bottom: 1px solid #000;">
       <span style="font-weight: 700;">REM</span>
       <span>{{ rem_h }}h{{ rem_m }}m</span>
       <span style="font-weight: 700;">{{ rem_pct }}%</span>
     </div>
 
-    <div class="flex flex--row flex--between" style="width: 100%; font-size: 13px; font-weight: 600; color: #000; padding: 2px 0;">
+    {% assign awake_pct = s.awake_min | times: 100 | divided_by: s.total_sleep_min %}
+    <div class="flex flex--row flex--between" style="width: 100%; font-size: 11px; font-weight: 600; color: {% if s.awake_min > 10 %}red{% else %}#000{% endif %}; padding: 1px 0;">
       <span style="font-weight: 700;">Wach</span>
       <span>{{ s.awake_min }}m</span>
-      {% assign awake_pct = s.awake_min | times: 100 | divided_by: s.total_sleep_min %}
       <span style="font-weight: 700;">{{ awake_pct }}%</span>
     </div>
   </div>
@@ -77,16 +78,16 @@
       {% for p in s.phases %}
         {% assign pw = p.duration_min | times: 170 | divided_by: total_dur %}
         {% if pw < 1 %}{% assign pw = 1 %}{% endif %}
-        {% if p.phase == "deep" %}{% assign py = 56 %}
-        {% elsif p.phase == "light" %}{% assign py = 38 %}
-        {% elsif p.phase == "rem" %}{% assign py = 20 %}
-        {% else %}{% assign py = 2 %}
+        {% if p.phase == "deep" %}{% assign py = 56 %}{% assign pfill = "#000" %}
+        {% elsif p.phase == "light" %}{% assign py = 38 %}{% assign pfill = "#000" %}
+        {% elsif p.phase == "rem" %}{% assign py = 20 %}{% assign pfill = "#000" %}
+        {% else %}{% assign py = 2 %}{% assign pfill = "red" %}
         {% endif %}
-        <rect x="{{ px }}" y="{{ py }}" width="{{ pw }}" height="14" fill="#000" />
+        <rect x="{{ px }}" y="{{ py }}" width="{{ pw }}" height="14" fill="{{ pfill }}" />
         {% assign px = px | plus: pw %}
       {% endfor %}
 
-      <text x="178" y="12" style="font-size: 7px; font-weight: 700;">W</text>
+      <text x="178" y="12" style="font-size: 7px; font-weight: 700; fill: red;">W</text>
       <text x="172" y="30" style="font-size: 7px; font-weight: 700;">REM</text>
       <text x="178" y="48" style="font-size: 7px; font-weight: 700;">L</text>
       <text x="178" y="66" style="font-size: 7px; font-weight: 700;">T</text>
@@ -103,5 +104,6 @@
 
 <div class="title_bar">
   <span class="title">Schlaf</span>
-  <span class="instance">{{ date }}</span>
+  <span class="instance">{{ sleep.sleep_date | default: date | date: "%d.%m.%Y" }}</span>
+</div>
 </div>
