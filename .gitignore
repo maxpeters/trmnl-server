@@ -44,3 +44,10 @@ yarn-error.log
 /.agents
 /.github/skills
 docker/prod/.env
+/dist
+/plugins/.preview_*.html
+/plugins/.venv/
+/trmnl-server.log
+/trmnl.db
+/trmnl.db-shm
+/trmnl.db-wal
