@@ -11,8 +11,8 @@
   <div class="flex flex--row flex--between flex--center-y" style="margin-bottom: 8px;">
     <div class="flex flex--row flex--center-y gap--medium">
       <div>
-        <div style="font-size: 40px; font-weight: 700; line-height: 1; color: #000;">{{ daily.steps | default: "--" }}</div>
-        <div style="font-size: 14px; font-weight: 600; color: #000;">Schritte / {{ daily.distance_km | default: "0" }} km</div>
+        <div style="font-size: 40px; font-weight: 700; line-height: 1; color: {% if daily.steps < 5000 %}red{% else %}#000{% endif %};">{{ daily.steps | default: "--" }}</div>
+        <div style="font-size: 14px; font-weight: 600; color: {% if daily.steps < 5000 %}red{% else %}#000{% endif %};">Schritte / {{ daily.distance_km | default: "0" }} km</div>
       </div>
       <div style="border-left: 2px solid #000; padding-left: 12px;">
         <div style="font-size: 36px; font-weight: 700; line-height: 1; color: #000;">{{ daily.active_calories | default: 0 | floor }}</div>
@@ -71,8 +71,8 @@
           <div style="font-size: 11px; font-weight: 600; color: #000;">Minuten</div>
         </div>
         <div style="text-align: center;">
-          <div style="font-size: 32px; font-weight: 700; color: #000;">{{ week_summary.zone2_minutes }}</div>
-          <div style="font-size: 11px; font-weight: 600; color: #000;">Z2 min</div>
+          <div style="font-size: 32px; font-weight: 700; color: {% if week_summary.zone2_minutes < 60 %}red{% else %}#000{% endif %};">{{ week_summary.zone2_minutes }}</div>
+          <div style="font-size: 11px; font-weight: 600; color: {% if week_summary.zone2_minutes < 60 %}red{% else %}#000{% endif %};">Z2 min</div>
         </div>
       </div>
       {% endif %}
