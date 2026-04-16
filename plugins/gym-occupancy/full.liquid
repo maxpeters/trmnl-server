@@ -44,13 +44,7 @@
 
   <div style="flex: 1; padding-left: 8px; height: 100%;">
     {% if avg and avg.size > 0 %}
-    {% assign max_pct = 100 %}
-    {% for h in hours %}
-      {% if h.percentage > max_pct %}{% assign max_pct = h.percentage %}{% endif %}
-    {% endfor %}
-    {% for a in avg %}
-      {% if a.avg_percentage > max_pct %}{% assign max_pct = a.avg_percentage %}{% endif %}
-    {% endfor %}
+    {% assign max_pct = 40 %}
 
     {% comment %} Data range for dynamic x-axis {% endcomment %}
     {% assign data_end_hour = 7 %}
@@ -70,17 +64,19 @@
         <pattern id="hatch" patternUnits="userSpaceOnUse" width="4" height="4">
           <line x1="0" y1="2" x2="4" y2="2" stroke="#000" stroke-width="0.5"/>
         </pattern>
+        <clipPath id="chart-clip"><rect x="-30" y="16" width="500" height="218" /></clipPath>
       </defs>
 
-      {% comment %} Y-axis labels {% endcomment %}
-      {% assign y100_val = 100 | times: 210 | divided_by: max_pct %}
-      {% assign y100 = 230 | minus: y100_val | plus: 4 %}
-      {% assign y50_val = 50 | times: 210 | divided_by: max_pct %}
-      {% assign y50 = 230 | minus: y50_val | plus: 4 %}
-      <text x="6" y="{{ y100 }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">100%</text>
-      <text x="6" y="{{ y50 }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">50%</text>
+      {% comment %} Y-axis labels (0% to 40%) {% endcomment %}
+      {% assign y40_val = 40 | times: 210 | divided_by: max_pct %}
+      {% assign y40 = 230 | minus: y40_val | plus: 4 %}
+      {% assign y20_val = 20 | times: 210 | divided_by: max_pct %}
+      {% assign y20 = 230 | minus: y20_val | plus: 4 %}
+      <text x="6" y="{{ y40 }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">40%</text>
+      <text x="6" y="{{ y20 }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">20%</text>
       <text x="6" y="234" text-anchor="end" style="font-size: 10px; font-weight: 600;">0%</text>
 
+      <g clip-path="url(#chart-clip)">
       {% comment %} Average: dashed line, no fill {% endcomment %}
       <polyline fill="none" stroke="#000" stroke-width="1" stroke-dasharray="4,3" points="{% for a in avg %}{% assign ax = a.hour | minus: 7 | times: 25 | plus: 10 %}{% assign ay = a.avg_percentage | times: 210 | divided_by: max_pct %}{% assign apy = 230 | minus: ay %}{{ ax }},{{ apy }} {% endfor %}" />
 
@@ -100,6 +96,7 @@
         <text x="{{ cx }}" y="{{ cpy | minus: 10 }}" text-anchor="middle" style="font-size: 11px; font-weight: 700;">{{ last_h.percentage }}%</text>
       {% endif %}
 
+      </g>
       {% comment %} Now marker: red dashed vertical line {% endcomment %}
       {% if now_hour >= 7 and now_hour <= data_end_hour %}
         {% assign now_x = now_hour | minus: 7 | times: 25 | plus: 10 %}
