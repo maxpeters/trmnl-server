@@ -119,6 +119,12 @@
           <text x="{{ tx }}" y="302" text-anchor="middle" style="font-size: 12px; font-weight: 600;">{{ hour }}</text>
         {% endfor %}
 
+        {% comment %} NOW marker {% endcomment %}
+        {% assign current_hour = 'now' | date: '%H' | plus: 0 %}
+        {% assign now_x = current_hour | times: 30 | plus: 10 %}
+        <line x1="{{ now_x }}" y1="14" x2="{{ now_x }}" y2="279" stroke="red" stroke-width="2" stroke-dasharray="6,4" />
+        <circle cx="{{ now_x }}" cy="10" r="5" fill="red" />
+
         {% comment %} Legend {% endcomment %}
         <line x1="20" y1="335" x2="50" y2="335" stroke="#000" stroke-width="3" />
         <text x="56" y="339" style="font-size: 11px; font-weight: 600;">Temp</text>
