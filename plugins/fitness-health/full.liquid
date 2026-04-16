@@ -7,19 +7,27 @@
   </div>
   {% else %}
 
+  {% assign has_steps = daily.steps != nil %}
+  {% assign has_active_calories = daily.active_calories != nil %}
+  {% assign has_resting_hr = daily.resting_hr != nil %}
+  {% assign has_min_hr = daily.min_hr != nil %}
+  {% assign has_max_hr = daily.max_hr != nil %}
+  {% assign has_any_hr = has_resting_hr or has_min_hr or has_max_hr %}
+
   <!-- Top row: Steps + Calories + HR -->
   <div class="flex flex--row flex--between flex--center-y" style="margin-bottom: 8px;">
     <div class="flex flex--row flex--center-y gap--medium">
       <div>
-        <div style="font-size: 40px; font-weight: 700; line-height: 1; color: {% if daily.steps < 5000 %}red{% else %}#000{% endif %};">{{ daily.steps | default: "--" }}</div>
-        <div style="font-size: 14px; font-weight: 600; color: {% if daily.steps < 5000 %}red{% else %}#000{% endif %};">Schritte / {{ daily.distance_km | default: "0" }} km</div>
+        <div style="font-size: 40px; font-weight: 700; line-height: 1; color: {% if has_steps and daily.steps < 5000 %}red{% else %}#000{% endif %};">{{ daily.steps | default: "--" }}</div>
+        <div style="font-size: 14px; font-weight: 600; color: {% if has_steps and daily.steps < 5000 %}red{% else %}#000{% endif %};">Schritte / {{ daily.distance_km | default: "0" }} km</div>
       </div>
       <div style="border-left: 2px solid #000; padding-left: 12px;">
-        <div style="font-size: 36px; font-weight: 700; line-height: 1; color: #000;">{{ daily.active_calories | default: 0 | floor }}</div>
+        <div style="font-size: 36px; font-weight: 700; line-height: 1; color: #000;">{% if has_active_calories %}{{ daily.active_calories | floor }}{% else %}--{% endif %}</div>
         <div style="font-size: 13px; font-weight: 700; color: #000;">kcal aktiv</div>
       </div>
     </div>
     <div class="flex flex--row gap--medium" style="font-size: 13px; font-weight: 600; color: #000;">
+      {% if has_any_hr %}
       <div style="text-align: center;">
         <div style="font-size: 24px; font-weight: 700;">{{ daily.resting_hr | default: "--" }}</div>
         <div>Ruhe</div>
@@ -32,6 +40,12 @@
         <div style="font-size: 24px; font-weight: 700;">{{ daily.max_hr | default: "--" }}</div>
         <div>Max</div>
       </div>
+      {% else %}
+      <div style="text-align: right;">
+        <div style="font-size: 16px; font-weight: 700; color: #000;">Herzfrequenz</div>
+        <div style="font-size: 13px; font-weight: 600; color: #666;">Heute noch keine Tageswerte</div>
+      </div>
+      {% endif %}
     </div>
   </div>
 
