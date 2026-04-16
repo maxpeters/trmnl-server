@@ -34,6 +34,11 @@ docker compose up -d
 
 Server laeuft auf `http://localhost:4567`.
 
+### macOS LaunchAgent
+
+Der lokale Background-Start nutzt `~/Projects/trmnl-server/start.sh` und startet den Stack ueber `docker compose up` aus `docker/prod/`.
+Der LaunchAgent dafuer liegt unter `~/Library/LaunchAgents/com.maxpeters.trmnl-server.plist`.
+
 ## Plugins
 
 Eigene Plugins im `plugins/` Ordner. Import via ZIP in LaraPaper unter Plugins & Recipes.
