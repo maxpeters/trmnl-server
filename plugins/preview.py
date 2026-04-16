@@ -4,11 +4,13 @@ Local TRMNL plugin preview via the running LaraPaper Docker container.
 
 Usage:
     python3 preview.py <plugin-name> [full|half_horizontal] [--container NAME] [--no-open]
+    python3 preview.py <plugin-name> [full|half_horizontal] --png [--container NAME] [--no-open]
     python3 preview.py --list
 
 Examples:
     python3 preview.py wetter-koeln
     python3 preview.py gym-occupancy half_horizontal
+    python3 preview.py sleep-analysis full --png
     python3 preview.py --container prod-app-1 sleep-analysis full
 """
 
@@ -28,6 +30,11 @@ NAME_MAP = {
     "sleep-analysis": "Sleep Analysis",
     "fitness-health": "Fitness & Health",
 }
+TRMNL_CSS_URL = "https://trmnl.com/css/2.3.7/plugins.css"
+TRMNL_JS_URL = "https://trmnl.com/js/2.3.7/plugins.js"
+LOCAL_CSS_NAME = ".preview_trmnl_plugins.css"
+LOCAL_JS_NAME = ".preview_trmnl_plugins.js"
+SCREENSHOT_SCRIPT = ".preview_screenshot.mjs"
 
 
 def fail(message: str) -> None:
@@ -75,12 +82,87 @@ def docker_exec(container: str, cmd: str) -> str:
     return result.stdout
 
 
+def ensure_local_assets() -> tuple[Path, Path]:
+    css_path = SCRIPT_DIR / LOCAL_CSS_NAME
+    js_path = SCRIPT_DIR / LOCAL_JS_NAME
+
+    if not css_path.exists():
+        result = run(["curl", "-fsSL", TRMNL_CSS_URL, "-o", str(css_path)])
+        if result.returncode != 0:
+            fail("failed to download TRMNL CSS asset")
+
+    if not js_path.exists():
+        result = run(["curl", "-fsSL", TRMNL_JS_URL, "-o", str(js_path)])
+        if result.returncode != 0:
+            fail("failed to download TRMNL JS asset")
+
+    return css_path, js_path
+
+
+def localize_assets(html: str) -> str:
+    replacements = [
+        (f'href="{TRMNL_CSS_URL}"', f'href="{LOCAL_CSS_NAME}"'),
+        (f"href='{TRMNL_CSS_URL}'", f"href='{LOCAL_CSS_NAME}'"),
+        (f'src="{TRMNL_JS_URL}"', f'src="{LOCAL_JS_NAME}"'),
+        (f"src='{TRMNL_JS_URL}'", f"src='{LOCAL_JS_NAME}'"),
+    ]
+    for old, new in replacements:
+        html = html.replace(old, new)
+    return html
+
+
+def ensure_screenshot_script() -> Path:
+    script_path = SCRIPT_DIR / SCREENSHOT_SCRIPT
+    script_path.write_text(
+        """
+import puppeteer from 'puppeteer';
+
+const [url, outPath, width, height] = process.argv.slice(2);
+
+if (!url || !outPath || !width || !height) {
+  console.error('Missing args');
+  process.exit(1);
+}
+
+const browser = await puppeteer.launch({ headless: true });
+try {
+  const page = await browser.newPage();
+  await page.setViewport({ width: Number(width), height: Number(height), deviceScaleFactor: 1 });
+  await page.goto(url, { waitUntil: 'networkidle0' });
+  await page.screenshot({ path: outPath, fullPage: false, type: 'png' });
+} finally {
+  await browser.close();
+}
+""".strip()
+        + "\n"
+    )
+    return script_path
+
+
+def render_png(local_html_path: Path, png_path: Path, size: str) -> None:
+    ensure_local_assets()
+    script_path = ensure_screenshot_script()
+    dims = (800, 480) if size == "full" else (400, 240)
+
+    result = run([
+        "node",
+        str(script_path),
+        local_html_path.resolve().as_uri(),
+        str(png_path),
+        str(dims[0]),
+        str(dims[1]),
+    ])
+    if result.returncode != 0:
+        fail(result.stderr.strip() or result.stdout.strip() or "failed to render PNG screenshot")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument("plugin", nargs="?", help="Plugin directory name inside plugins/")
     parser.add_argument("size", nargs="?", default="full", help="full or half_horizontal")
     parser.add_argument("--container", dest="container", help="Docker container name")
     parser.add_argument("--no-open", action="store_true", help="Do not open preview in browser")
+    parser.add_argument("--png", action="store_true", help="Also export a PNG screenshot")
     parser.add_argument("--list", action="store_true", help="List available plugins")
     return parser
 
@@ -161,8 +243,16 @@ def main() -> None:
 
     out_path = SCRIPT_DIR / f".preview_{plugin_name}_{size}.html"
     out_path.write_text(html)
+    print(f"Preview HTML: {out_path}")
 
-    print(f"Preview: {out_path}")
+    local_html_path = SCRIPT_DIR / f".preview_{plugin_name}_{size}_local.html"
+    local_html_path.write_text(localize_assets(html))
+
+    if args.png:
+        png_path = SCRIPT_DIR / f".preview_{plugin_name}_{size}.png"
+        render_png(local_html_path, png_path, size)
+        print(f"Preview PNG: {png_path}")
+
     if not args.no_open:
         webbrowser.open(out_path.as_uri())
 
