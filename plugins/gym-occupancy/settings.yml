@@ -1,7 +1,7 @@
 name: AI Fitness Auslastung
 id: gym-occupancy-v1
 strategy: polling
-polling_url: http://MacBookPro.fritz.box:8000/api/gym
+polling_url: {{ server_url | default: "http://MacBookPro.fritz.box:8000" }}/api/gym
 polling_verb: get
 refresh_interval: 15
 custom_fields:

@@ -28,6 +28,10 @@ Current weather, 24h temperature/rain forecast chart with Kita drop-off/pickup t
 | `bike_forecast.label` | string | Short label |
 | `bike_forecast.message` | string | Advisory message |
 
+## Configuration
+
+- `server_url` custom field overrides the API base URL used for polling.
+
 ## Refresh Interval
 
 15 minutes

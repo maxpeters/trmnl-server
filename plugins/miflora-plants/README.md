@@ -22,6 +22,10 @@ Moisture, temperature, light, and battery for Xiaomi MiFlora plant sensors with 
 | `chart_data` | object | Keyed by sensor_name |
 | `chart_data[name].moisture` | array | Array of [timestamp, value] pairs |
 
+## Configuration
+
+- `server_url` custom field overrides the API base URL used for polling.
+
 ## Refresh Interval
 
 30 minutes

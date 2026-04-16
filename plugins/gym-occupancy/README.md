@@ -19,6 +19,10 @@ Live occupancy percentage for AI Fitness Agnesviertel with today vs. average cha
 | `average[].avg_percentage` | number | Average occupancy percentage |
 | `updated_at` | string | Last update timestamp |
 
+## Configuration
+
+- `server_url` custom field overrides the API base URL used for polling.
+
 ## Refresh Interval
 
 15 minutes

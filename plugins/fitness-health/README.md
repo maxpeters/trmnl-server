@@ -31,6 +31,10 @@ Daily fitness summary from Apple Health via Garmin Connect.
 | `hr_zones.zone2_low` | number | Zone 2 lower bound (bpm) |
 | `hr_zones.zone2_high` | number | Zone 2 upper bound (bpm) |
 
+## Configuration
+
+- `server_url` custom field overrides the API base URL used for polling.
+
 ## Refresh Interval
 
 15 minutes

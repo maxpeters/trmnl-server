@@ -26,6 +26,10 @@ Nightly sleep breakdown with hypnogram visualization.
 | `sleep.phases[].phase` | string | Phase type: "deep", "light", "rem", "awake" |
 | `sleep.phases[].duration_min` | number | Phase duration in minutes |
 
+## Configuration
+
+- `server_url` custom field overrides the API base URL used for polling.
+
 ## Refresh Interval
 
 15 minutes
