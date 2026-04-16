@@ -44,7 +44,7 @@
 
   <div style="flex: 1; padding-left: 8px; height: 100%;">
     {% if avg and avg.size > 0 %}
-    {% assign max_pct = 25 %}
+    {% assign max_pct = 100 %}
     {% for h in hours %}
       {% if h.percentage > max_pct %}{% assign max_pct = h.percentage %}{% endif %}
     {% endfor %}
@@ -52,13 +52,42 @@
       {% if a.avg_percentage > max_pct %}{% assign max_pct = a.avg_percentage %}{% endif %}
     {% endfor %}
 
-    <svg viewBox="0 0 440 280" style="width:100%;height:100%;display:block;">
-      {% comment %} Average: dashed area {% endcomment %}
-      <polygon fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="4,3" points="{% for a in avg %}{% assign ax = a.hour | minus: 7 | times: 25 | plus: 10 %}{% assign ay = a.avg_percentage | times: 210 | divided_by: max_pct %}{% assign apy = 230 | minus: ay %}{{ ax }},{{ apy }} {% endfor %}{% assign last_a = avg | last %}{% assign last_ax = last_a.hour | minus: 7 | times: 25 | plus: 10 %}{{ last_ax }},230 {% assign first_a = avg | first %}{% assign first_ax = first_a.hour | minus: 7 | times: 25 | plus: 10 %}{{ first_ax }},230" />
+    {% comment %} Data range for dynamic x-axis {% endcomment %}
+    {% assign data_end_hour = 7 %}
+    {% for h in hours %}
+      {% if h.hour > data_end_hour %}{% assign data_end_hour = h.hour %}{% endif %}
+    {% endfor %}
+    {% for a in avg %}
+      {% if a.hour > data_end_hour %}{% assign data_end_hour = a.hour %}{% endif %}
+    {% endfor %}
+    {% assign axis_x2 = data_end_hour | minus: 7 | times: 25 | plus: 10 %}
 
-      {% comment %} Today: solid line {% endcomment %}
+    {% comment %} Current time for now-marker {% endcomment %}
+    {% assign now_hour = 'now' | date: '%H' | plus: 0 %}
+
+    <svg viewBox="-30 0 470 280" style="width:100%;height:100%;display:block;">
+      <defs>
+        <pattern id="hatch" patternUnits="userSpaceOnUse" width="4" height="4">
+          <line x1="0" y1="2" x2="4" y2="2" stroke="#000" stroke-width="0.5"/>
+        </pattern>
+      </defs>
+
+      {% comment %} Y-axis labels {% endcomment %}
+      {% assign y100_val = 100 | times: 210 | divided_by: max_pct %}
+      {% assign y100 = 230 | minus: y100_val | plus: 4 %}
+      {% assign y50_val = 50 | times: 210 | divided_by: max_pct %}
+      {% assign y50 = 230 | minus: y50_val | plus: 4 %}
+      <text x="6" y="{{ y100 }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">100%</text>
+      <text x="6" y="{{ y50 }}" text-anchor="end" style="font-size: 10px; font-weight: 600;">50%</text>
+      <text x="6" y="234" text-anchor="end" style="font-size: 10px; font-weight: 600;">0%</text>
+
+      {% comment %} Average: dashed line, no fill {% endcomment %}
+      <polyline fill="none" stroke="#000" stroke-width="1" stroke-dasharray="4,3" points="{% for a in avg %}{% assign ax = a.hour | minus: 7 | times: 25 | plus: 10 %}{% assign ay = a.avg_percentage | times: 210 | divided_by: max_pct %}{% assign apy = 230 | minus: ay %}{{ ax }},{{ apy }} {% endfor %}" />
+
+      {% comment %} Today: area fill + thin line {% endcomment %}
       {% if hours and hours.size > 1 %}
-      <polyline fill="none" stroke="#000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" points="{% for h in hours %}{% assign hx = h.hour | minus: 7 | times: 25 | plus: 10 %}{% assign hy = h.percentage | times: 210 | divided_by: max_pct %}{% assign hpy = 230 | minus: hy %}{{ hx }},{{ hpy }} {% endfor %}" />
+      <polygon fill="url(#hatch)" stroke="none" points="{% for h in hours %}{% assign hx = h.hour | minus: 7 | times: 25 | plus: 10 %}{% assign hy = h.percentage | times: 210 | divided_by: max_pct %}{% assign hpy = 230 | minus: hy %}{{ hx }},{{ hpy }} {% endfor %}{% assign last_hh = hours | last %}{% assign last_hx = last_hh.hour | minus: 7 | times: 25 | plus: 10 %}{{ last_hx }},230 {% assign first_hh = hours | first %}{% assign first_hx = first_hh.hour | minus: 7 | times: 25 | plus: 10 %}{{ first_hx }},230" />
+      <polyline fill="none" stroke="#000" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" points="{% for h in hours %}{% assign hx = h.hour | minus: 7 | times: 25 | plus: 10 %}{% assign hy = h.percentage | times: 210 | divided_by: max_pct %}{% assign hpy = 230 | minus: hy %}{{ hx }},{{ hpy }} {% endfor %}" />
       {% endif %}
 
       {% comment %} Current: red dot + percentage label {% endcomment %}
@@ -67,25 +96,33 @@
         {% assign cx = last_h.hour | minus: 7 | times: 25 | plus: 10 %}
         {% assign cy = last_h.percentage | times: 210 | divided_by: max_pct %}
         {% assign cpy = 230 | minus: cy %}
-        <circle cx="{{ cx }}" cy="{{ cpy }}" r="7" fill="red" />
-        <text x="{{ cx }}" y="{{ cpy | minus: 12 }}" text-anchor="middle" style="font-size: 12px; font-weight: 700;">{{ last_h.percentage }}%</text>
+        <circle cx="{{ cx }}" cy="{{ cpy }}" r="5" fill="red" />
+        <text x="{{ cx }}" y="{{ cpy | minus: 10 }}" text-anchor="middle" style="font-size: 11px; font-weight: 700;">{{ last_h.percentage }}%</text>
       {% endif %}
 
-      {% comment %} X axis {% endcomment %}
-      <line x1="10" y1="231" x2="440" y2="231" stroke="#000" stroke-width="1.5" />
+      {% comment %} Now marker: red dashed vertical line {% endcomment %}
+      {% if now_hour >= 7 and now_hour <= data_end_hour %}
+        {% assign now_x = now_hour | minus: 7 | times: 25 | plus: 10 %}
+        <line x1="{{ now_x }}" y1="20" x2="{{ now_x }}" y2="230" stroke="red" stroke-width="1" stroke-dasharray="4,3" />
+      {% endif %}
 
-      {% comment %} Hour ticks {% endcomment %}
+      {% comment %} X axis (limited to data range) {% endcomment %}
+      <line x1="10" y1="231" x2="{{ axis_x2 }}" y2="231" stroke="#000" stroke-width="1.5" />
+
+      {% comment %} Hour ticks (only within data range) {% endcomment %}
       {% for i in (0..5) %}
         {% assign hour = i | times: 3 | plus: 7 %}
-        {% assign tx = i | times: 3 | times: 25 | plus: 10 %}
-        <line x1="{{ tx }}" y1="231" x2="{{ tx }}" y2="237" stroke="#000" stroke-width="1.5" />
-        <text x="{{ tx }}" y="255" text-anchor="middle" style="font-size: 14px; font-weight: 600;">{{ hour }}</text>
+        {% if hour <= data_end_hour %}
+          {% assign tx = i | times: 3 | times: 25 | plus: 10 %}
+          <line x1="{{ tx }}" y1="231" x2="{{ tx }}" y2="237" stroke="#000" stroke-width="1.5" />
+          <text x="{{ tx }}" y="255" text-anchor="middle" style="font-size: 14px; font-weight: 600;">{{ hour }}</text>
+        {% endif %}
       {% endfor %}
 
       {% comment %} Legend {% endcomment %}
-      <line x1="20" y1="275" x2="50" y2="275" stroke="#000" stroke-width="4" />
+      <rect x="20" y="268" width="30" height="10" fill="url(#hatch)" stroke="#000" stroke-width="1"/>
       <text x="56" y="279" style="font-size: 11px; font-weight: 600;">Heute</text>
-      <line x1="110" y1="275" x2="140" y2="275" stroke="#000" stroke-width="1.5" stroke-dasharray="4,3" />
+      <line x1="110" y1="275" x2="140" y2="275" stroke="#000" stroke-width="1" stroke-dasharray="4,3" />
       <text x="146" y="279" style="font-size: 11px; font-weight: 600;">Durchschnitt</text>
     </svg>
     {% endif %}
