@@ -63,8 +63,10 @@
             {% assign bh = h.precipitation_prob | times: 2 %}
             {% assign by = 278 | minus: bh %}
             {% if h.precipitation_prob > 50 %}
+              <rect x="{{ bx }}" y="{{ by }}" width="24" height="{{ bh }}" fill="#fff" />
               <rect x="{{ bx }}" y="{{ by }}" width="24" height="{{ bh }}" fill="url(#rain-hatch)" stroke="#000" stroke-width="1" />
             {% else %}
+              <rect x="{{ bx }}" y="{{ by }}" width="24" height="{{ bh }}" fill="#fff" />
               <rect x="{{ bx }}" y="{{ by }}" width="24" height="{{ bh }}" fill="none" stroke="#000" stroke-width="1.5" />
             {% endif %}
             {% if h.precipitation_prob > 40 %}
@@ -119,7 +121,7 @@
         {% comment %} NOW marker {% endcomment %}
         {% assign current_hour = 'now' | date: '%H' | plus: 0 %}
         {% assign now_x = current_hour | times: 30 | plus: 10 %}
-        <line x1="{{ now_x }}" y1="14" x2="{{ now_x }}" y2="279" stroke="#fff" stroke-width="4" />
+        <line x1="{{ now_x }}" y1="14" x2="{{ now_x }}" y2="279" stroke="#fff" stroke-width="5" />
         <line x1="{{ now_x }}" y1="14" x2="{{ now_x }}" y2="279" stroke="red" stroke-width="1.5" stroke-dasharray="4,3" />
         <circle cx="{{ now_x }}" cy="10" r="5" fill="red" />
 
