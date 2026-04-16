@@ -1,4 +1,5 @@
-<div class="flex flex--row h--full" style="padding: 6px 10px;">
+<div class="view view--half_horizontal">
+<div class="layout layout--row" style="padding: 6px 10px; align-items: stretch; justify-content: flex-start;">
 
   {% if available == false %}
   <div class="flex flex--center-x flex--center-y grow">
@@ -73,5 +74,6 @@
 
 <div class="title_bar">
   <span class="title">Fitness</span>
-  <span class="instance">{{ date }}</span>
+  <span class="instance">{{ date | date: "%d.%m.%Y" }}</span>
+</div>
 </div>

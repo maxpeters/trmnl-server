@@ -1,8 +1,18 @@
+<div class="view view--full">
 <div class="flex flex--row h--full" style="padding: 8px 12px;">
+  {% assign hours = today %}
+  {% assign avg = average %}
+
+  {% if current == nil and hours == nil %}
+  <div class="flex flex--center-x flex--center-y grow">
+    <div style="font-size: 24px; font-weight: 700; color: #000;">Keine Gym-Daten</div>
+  </div>
+  {% else %}
+
   <div class="flex flex--col flex--center-y" style="width: 140px;">
     <div style="font-size: 14px; font-weight: 700; letter-spacing: 1px;">AI FITNESS</div>
     <div style="font-size: 14px; font-weight: 600;">Agnesviertel</div>
-    <div style="font-size: 80px; font-weight: 700; line-height: 1; margin: 8px 0;">{{ current.percentage }}%</div>
+    <div style="font-size: 80px; font-weight: 700; line-height: 1; margin: 8px 0;">{{ current.percentage | default: "--" }}%</div>
     <div style="font-size: 16px; font-weight: 700;">
       {% if current.percentage <= 5 %}Fast leer
       {% elsif current.percentage <= 15 %}Ruhig
@@ -11,10 +21,16 @@
       {% else %}Sehr voll
       {% endif %}
     </div>
+    {% comment %} Beste Zeit: only future hours {% endcomment %}
+    {% assign current_hour = 0 %}
+    {% if hours and hours.size > 0 %}
+      {% assign last_entry = hours | last %}
+      {% assign current_hour = last_entry.hour | plus: 1 %}
+    {% endif %}
     {% assign best_hour = 0 %}
     {% assign best_avg = 100 %}
-    {% for a in average %}
-      {% if a.hour >= 7 and a.hour <= 21 %}
+    {% for a in avg %}
+      {% if a.hour >= current_hour and a.hour <= 20 %}
         {% if a.avg_percentage < best_avg %}
           {% assign best_avg = a.avg_percentage %}
           {% assign best_hour = a.hour %}
@@ -22,13 +38,11 @@
       {% endif %}
     {% endfor %}
     {% if best_hour > 0 %}
-    <div style="font-size: 13px; font-weight: 600; margin-top: 8px; border: 2px solid #000; padding: 2px 8px;">Beste Zeit: {{ best_hour }}:00</div>
+    <div style="font-size: 13px; font-weight: 600; margin-top: 8px; border: 2px solid #000; padding: 4px 8px;">Beste Zeit: {{ best_hour }}:00</div>
     {% endif %}
   </div>
 
   <div style="flex: 1; padding-left: 8px; height: 100%;">
-    {% assign hours = today %}
-    {% assign avg = average %}
     {% if avg and avg.size > 0 %}
     {% assign max_pct = 25 %}
     {% for h in hours %}
@@ -39,21 +53,22 @@
     {% endfor %}
 
     <svg viewBox="0 0 440 280" style="width:100%;height:100%;display:block;">
-      {% comment %} Average: outline area with dashed border {% endcomment %}
-      <polygon fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="4,3" points="{% for a in avg %}{% assign ax = a.hour | minus: 6 | times: 25 | plus: 10 %}{% assign ay = a.avg_percentage | times: 210 | divided_by: max_pct %}{% assign apy = 230 | minus: ay %}{{ ax }},{{ apy }} {% endfor %}{% assign last_a = avg | last %}{% assign last_ax = last_a.hour | minus: 6 | times: 25 | plus: 10 %}{{ last_ax }},230 {% assign first_a = avg | first %}{% assign first_ax = first_a.hour | minus: 6 | times: 25 | plus: 10 %}{{ first_ax }},230" />
+      {% comment %} Average: dashed area {% endcomment %}
+      <polygon fill="none" stroke="#000" stroke-width="1.5" stroke-dasharray="4,3" points="{% for a in avg %}{% assign ax = a.hour | minus: 7 | times: 25 | plus: 10 %}{% assign ay = a.avg_percentage | times: 210 | divided_by: max_pct %}{% assign apy = 230 | minus: ay %}{{ ax }},{{ apy }} {% endfor %}{% assign last_a = avg | last %}{% assign last_ax = last_a.hour | minus: 7 | times: 25 | plus: 10 %}{{ last_ax }},230 {% assign first_a = avg | first %}{% assign first_ax = first_a.hour | minus: 7 | times: 25 | plus: 10 %}{{ first_ax }},230" />
 
       {% comment %} Today: solid line {% endcomment %}
       {% if hours and hours.size > 1 %}
-      <polyline fill="none" stroke="#000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" points="{% for h in hours %}{% assign hx = h.hour | minus: 6 | times: 25 | plus: 10 %}{% assign hy = h.percentage | times: 210 | divided_by: max_pct %}{% assign hpy = 230 | minus: hy %}{{ hx }},{{ hpy }} {% endfor %}" />
+      <polyline fill="none" stroke="#000" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" points="{% for h in hours %}{% assign hx = h.hour | minus: 7 | times: 25 | plus: 10 %}{% assign hy = h.percentage | times: 210 | divided_by: max_pct %}{% assign hpy = 230 | minus: hy %}{{ hx }},{{ hpy }} {% endfor %}" />
       {% endif %}
 
-      {% comment %} Current position: red dot on last data point {% endcomment %}
+      {% comment %} Current: red dot + percentage label {% endcomment %}
       {% if hours and hours.size > 0 %}
         {% assign last_h = hours | last %}
-        {% assign cx = last_h.hour | minus: 6 | times: 25 | plus: 10 %}
+        {% assign cx = last_h.hour | minus: 7 | times: 25 | plus: 10 %}
         {% assign cy = last_h.percentage | times: 210 | divided_by: max_pct %}
         {% assign cpy = 230 | minus: cy %}
-        <circle cx="{{ cx }}" cy="{{ cpy }}" r="8" fill="red" />
+        <circle cx="{{ cx }}" cy="{{ cpy }}" r="7" fill="red" />
+        <text x="{{ cx }}" y="{{ cpy | minus: 12 }}" text-anchor="middle" style="font-size: 12px; font-weight: 700;">{{ last_h.percentage }}%</text>
       {% endif %}
 
       {% comment %} X axis {% endcomment %}
@@ -61,17 +76,26 @@
 
       {% comment %} Hour ticks {% endcomment %}
       {% for i in (0..5) %}
-        {% assign hour = i | times: 3 | plus: 6 %}
+        {% assign hour = i | times: 3 | plus: 7 %}
         {% assign tx = i | times: 3 | times: 25 | plus: 10 %}
         <line x1="{{ tx }}" y1="231" x2="{{ tx }}" y2="237" stroke="#000" stroke-width="1.5" />
         <text x="{{ tx }}" y="255" text-anchor="middle" style="font-size: 14px; font-weight: 600;">{{ hour }}</text>
       {% endfor %}
+
+      {% comment %} Legend {% endcomment %}
+      <line x1="20" y1="275" x2="50" y2="275" stroke="#000" stroke-width="4" />
+      <text x="56" y="279" style="font-size: 11px; font-weight: 600;">Heute</text>
+      <line x1="110" y1="275" x2="140" y2="275" stroke="#000" stroke-width="1.5" stroke-dasharray="4,3" />
+      <text x="146" y="279" style="font-size: 11px; font-weight: 600;">Durchschnitt</text>
     </svg>
     {% endif %}
   </div>
+
+  {% endif %}
 </div>
 
-<div class="title_bar">
-  <span class="title">AI Fitness</span>
-  <span class="instance">{{ updated_at | date: "%H:%M" }}</span>
+  <div class="title_bar">
+    <span class="title">AI Fitness</span>
+    <span class="instance">{{ updated_at | date: "%H:%M" }}</span>
+  </div>
 </div>

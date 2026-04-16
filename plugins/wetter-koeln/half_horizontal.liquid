@@ -1,4 +1,5 @@
-<div class="flex flex--row h--full" style="padding: 6px 10px;">
+<div class="view view--half_horizontal">
+<div class="layout layout--row" style="padding: 6px 10px; align-items: stretch; justify-content: flex-start;">
 
   {% if available == false %}
   <div class="flex flex--center-x flex--center-y grow">
@@ -45,7 +46,11 @@
         {% assign bh = h.precipitation_prob | times: 80 | divided_by: 100 %}
         {% assign by = 160 | minus: bh %}
         {% if h.precipitation_prob > 5 %}
-        <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="none" stroke="#000" stroke-width="1.5" />
+          {% if h.precipitation_prob > 50 %}
+          <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="none" stroke="red" stroke-width="2" />
+          {% else %}
+          <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="none" stroke="red" stroke-width="1.5" />
+          {% endif %}
         {% endif %}
       {% endfor %}
 
@@ -83,4 +88,5 @@
 <div class="title_bar">
   <span class="title">Wetter</span>
   <span class="instance">{{ updated_at | date: "%H:%M" }}</span>
+</div>
 </div>

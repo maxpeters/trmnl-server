@@ -1,134 +1,140 @@
-<div class="flex flex--col h--full" style="padding: 8px 12px;">
+<div class="view view--full">
+  <div class="layout layout--col" style="align-items: stretch; padding: 10px 16px;">
 
-  {% if available == false %}
-  <div class="flex flex--center-x flex--center-y grow">
-    <div style="font-size: 24px; font-weight: 700;">Keine Wetter-Daten</div>
-  </div>
-  {% else %}
+    {% if available == false %}
+    <div style="display: flex; justify-content: center; align-items: center; flex: 1;">
+      <div style="font-size: 24px; font-weight: 700;">Keine Wetter-Daten</div>
+    </div>
+    {% else %}
 
-  <!-- Top: Current + Kita -->
-  <div class="flex flex--row flex--between flex--center-y" style="margin-bottom: 4px;">
-    <div class="flex flex--row flex--center-y gap--small">
-      <div style="font-size: 36px; font-weight: 700; line-height: 1; color: #000;">{{ current.temp | floor }}°</div>
-      <div style="font-size: 13px; font-weight: 600; color: #000;">
-        <div>{{ current.description }}</div>
-        <div>{{ daily.today.min | floor }}° / {{ daily.today.max | floor }}° · {{ daily.today.precipitation_prob }}%</div>
-        <div>{{ daily.today.sunrise }} - {{ daily.today.sunset }}</div>
+    <!-- Top: Current -->
+    <div class="flex flex--row flex--between flex--center-y" style="margin-bottom: 4px;">
+      <div class="flex flex--row flex--center-y gap--small">
+        <div style="font-size: 36px; font-weight: 700; line-height: 1;">{{ current.temp | floor }}°</div>
+        <div style="font-size: 13px; font-weight: 600;">
+          <div>{{ current.description }}</div>
+          <div>{{ daily.today.min | floor }}° / {{ daily.today.max | floor }}° · {% if daily.today.precipitation_prob > 50 %}<span style="color: red; font-weight: 700;">{{ daily.today.precipitation_prob }}%</span>{% else %}{{ daily.today.precipitation_prob }}%{% endif %}</div>
+          <div>{{ daily.today.sunrise }} - {{ daily.today.sunset }}</div>
+        </div>
+      </div>
+      <div style="font-size: 11px; font-weight: 600; text-align: right; line-height: 1.4;">
+        <div>Bring 7:30-8:45 / 9:30</div>
+        <div>Abhol 13:30-14:45 / 15:30-16:30</div>
       </div>
     </div>
-    {% if bike_forecast %}
-    <div style="border: 2px solid #000; padding: 4px 8px;{% if bike_forecast.status == 'wet' %} background: red; color: #fff;{% endif %}">
-      <div style="font-size: 11px; font-weight: 700;">{{ bike_forecast.label }}</div>
-      <div style="font-size: 13px; font-weight: 700;">{{ bike_forecast.message }}</div>
+
+    <!-- Chart: fixed 0-24h axis -->
+    <div class="grow" style="min-height: 0; border-top: 1px solid #000; padding-top: 4px;">
+      {% if hourly and hourly.size > 0 %}
+
+      {% assign min_temp = 100 %}
+      {% assign max_temp = -50 %}
+      {% for h in hourly %}
+        {% assign t = h.temp | floor %}
+        {% if t < min_temp %}{% assign min_temp = t %}{% endif %}
+        {% if t > max_temp %}{% assign max_temp = t %}{% endif %}
+      {% endfor %}
+      {% assign temp_range = max_temp | minus: min_temp %}
+      {% if temp_range == 0 %}{% assign temp_range = 1 %}{% endif %}
+
+      <svg viewBox="0 0 740 350" style="width: 100%; height: 100%; display: block;">
+        <defs>
+          <pattern id="kita-dots" width="8" height="8" patternUnits="userSpaceOnUse">
+            <circle cx="4" cy="4" r="1.5" fill="red" />
+          </pattern>
+          <pattern id="rain-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="6" stroke="red" stroke-width="3" />
+          </pattern>
+        </defs>
+
+        {% comment %} BRING: 7:30-9:30 {% endcomment %}
+        {% comment %} 7:30 = 7.5*30+10 = 235, 9:30 = 9.5*30+10 = 295, width = 60 {% endcomment %}
+        <rect x="235" y="20" width="60" height="258" fill="url(#kita-dots)" />
+        <text x="237" y="14" style="font-size: 10px; font-weight: 700;">BRING 7:30-9:30</text>
+
+        {% comment %} ABHOL: 13:30-16:30 {% endcomment %}
+        {% comment %} 13:30 = 13.5*30+10 = 415, 16:30 = 16.5*30+10 = 505, width = 90 {% endcomment %}
+        <rect x="415" y="20" width="90" height="258" fill="url(#kita-dots)" />
+        <text x="417" y="14" style="font-size: 10px; font-weight: 700;">ABHOL 13:30-16:30</text>
+
+        {% comment %} Rain bars (red) - positioned by actual hour {% endcomment %}
+        {% for h in hourly %}
+          {% assign hparts = h.time | split: ":" %}
+          {% assign hval = hparts[0] | plus: 0 %}
+          {% assign bx = hval | times: 30 | plus: 12 %}
+          {% if h.precipitation_prob > 5 %}
+            {% assign bh = h.precipitation_prob | times: 2 %}
+            {% assign by = 278 | minus: bh %}
+            {% if h.precipitation_prob > 50 %}
+              <rect x="{{ bx }}" y="{{ by }}" width="24" height="{{ bh }}" fill="url(#rain-hatch)" stroke="red" stroke-width="1" />
+            {% else %}
+              <rect x="{{ bx }}" y="{{ by }}" width="24" height="{{ bh }}" fill="none" stroke="red" stroke-width="1.5" />
+            {% endif %}
+            {% if h.precipitation_prob > 40 %}
+              {% assign lx = bx | plus: 12 %}
+              <text x="{{ lx }}" y="{{ by | minus: 3 }}" text-anchor="middle" style="font-size: 9px; font-weight: 700;">{{ h.precipitation_prob }}%</text>
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {% comment %} Temperature line - sorted by hour 0-23 {% endcomment %}
+        {% assign temp_points = "" %}
+        {% for hour_slot in (0..23) %}
+          {% for h in hourly %}
+            {% assign hparts = h.time | split: ":" %}
+            {% assign hval = hparts[0] | plus: 0 %}
+            {% if hval == hour_slot %}
+              {% assign px = hval | times: 30 | plus: 24 %}
+              {% assign t = h.temp | floor %}
+              {% assign ty = t | minus: min_temp | times: 220 | divided_by: temp_range %}
+              {% assign py = 268 | minus: ty %}
+              {% capture temp_points %}{{ temp_points }}{{ px }},{{ py }} {% endcapture %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+
+        <polyline fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="{{ temp_points }}" />
+
+        {% comment %} Temperature labels every 3h {% endcomment %}
+        {% for h in hourly %}
+          {% assign hparts = h.time | split: ":" %}
+          {% assign hval = hparts[0] | plus: 0 %}
+          {% assign mod3 = hval | modulo: 3 %}
+          {% if mod3 == 0 %}
+            {% assign px = hval | times: 30 | plus: 24 %}
+            {% assign t = h.temp | floor %}
+            {% assign ty = t | minus: min_temp | times: 220 | divided_by: temp_range %}
+            {% assign py = 268 | minus: ty | minus: 10 %}
+            <text x="{{ px }}" y="{{ py }}" text-anchor="middle" style="font-size: 11px; font-weight: 700;">{{ t }}°</text>
+          {% endif %}
+        {% endfor %}
+
+        {% comment %} X-axis: fixed 0-24h {% endcomment %}
+        <line x1="10" y1="279" x2="730" y2="279" stroke="#000" stroke-width="1.5" />
+        {% for tick in (0..8) %}
+          {% assign hour = tick | times: 3 %}
+          {% assign tx = hour | times: 30 | plus: 10 %}
+          <line x1="{{ tx }}" y1="279" x2="{{ tx }}" y2="286" stroke="#000" stroke-width="1" />
+          <text x="{{ tx }}" y="302" text-anchor="middle" style="font-size: 12px; font-weight: 600;">{{ hour }}</text>
+        {% endfor %}
+
+        {% comment %} Legend {% endcomment %}
+        <line x1="20" y1="335" x2="50" y2="335" stroke="#000" stroke-width="3" />
+        <text x="56" y="339" style="font-size: 11px; font-weight: 600;">Temp</text>
+        <rect x="110" y="328" width="14" height="14" fill="none" stroke="red" stroke-width="1.5" />
+        <text x="128" y="339" style="font-size: 11px; font-weight: 600;">Regen%</text>
+        <rect x="200" y="328" width="14" height="14" fill="url(#kita-dots)" />
+        <text x="218" y="339" style="font-size: 11px; font-weight: 600;">Kita</text>
+      </svg>
+      {% endif %}
     </div>
+
     {% endif %}
   </div>
 
-  <!-- Chart -->
-  <div class="grow" style="min-height: 0; border-top: 1px solid #000; padding-top: 4px;">
-    {% if hourly and hourly.size > 0 %}
-
-    {% assign min_temp = 100 %}
-    {% assign max_temp = -50 %}
-    {% for h in hourly %}
-      {% assign t = h.temp | floor %}
-      {% if t < min_temp %}{% assign min_temp = t %}{% endif %}
-      {% if t > max_temp %}{% assign max_temp = t %}{% endif %}
-    {% endfor %}
-    {% assign temp_range = max_temp | minus: min_temp %}
-    {% if temp_range == 0 %}{% assign temp_range = 1 %}{% endif %}
-
-    {% assign first_time = hourly[0].time | split: ":" %}
-    {% assign start_hour = first_time[0] | plus: 0 %}
-    {% assign chart_hours = hourly.size %}
-    {% assign px_per_hour = 29 %}
-    {% assign chart_left = 10 %}
-
-    <svg viewBox="0 0 710 250" style="width: 100%; height: 100%; display: block;">
-      <defs>
-        <pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse">
-          <circle cx="2" cy="2" r="1.2" fill="#000" />
-        </pattern>
-      </defs>
-
-      {% comment %} Kita time slots - positioned by actual hour {% endcomment %}
-      {% for slot in (0..3) %}
-        {% case slot %}
-          {% when 0 %}{% assign slot_h = 8 %}{% assign slot_m = 0 %}{% assign slot_dur = 22 %}{% assign slot_label = "BRING" %}
-          {% when 1 %}{% assign slot_h = 9 %}{% assign slot_m = 15 %}{% assign slot_dur = 15 %}{% assign slot_label = "" %}
-          {% when 2 %}{% assign slot_h = 14 %}{% assign slot_m = 20 %}{% assign slot_dur = 12 %}{% assign slot_label = "ABHOL" %}
-          {% when 3 %}{% assign slot_h = 15 %}{% assign slot_m = 15 %}{% assign slot_dur = 15 %}{% assign slot_label = "" %}
-        {% endcase %}
-        {% assign offset = slot_h | minus: start_hour %}
-        {% if offset < 0 %}{% assign offset = offset | plus: 24 %}{% endif %}
-        {% if offset < chart_hours %}
-          {% assign sx = offset | times: px_per_hour | plus: chart_left | plus: slot_m | divided_by: 2 %}
-          {% assign sw = slot_dur | divided_by: 2 %}
-          {% if sw < 8 %}{% assign sw = 8 %}{% endif %}
-          <rect x="{{ sx }}" y="16" width="{{ sw }}" height="184" fill="url(#dots)" opacity="0.5" />
-          {% if slot_label != "" %}
-            <text x="{{ sx | plus: 5 }}" y="12" style="font-size: 8px; font-weight: 700;">{{ slot_label }}</text>
-          {% endif %}
-        {% endif %}
-      {% endfor %}
-
-      {% comment %} Precipitation bars {% endcomment %}
-      {% for h in hourly %}
-        {% assign i = forloop.index0 %}
-        {% assign bx = i | times: px_per_hour | plus: chart_left %}
-        {% if h.precipitation_prob > 5 %}
-          {% assign bh = h.precipitation_prob %}
-          {% assign by = 200 | minus: bh %}
-          <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="none" stroke="#000" stroke-width="1.5" />
-          {% if h.precipitation_prob > 40 %}
-            <text x="{{ bx | plus: 11 }}" y="{{ by | minus: 3 }}" text-anchor="middle" style="font-size: 8px; font-weight: 700;">{{ h.precipitation_prob }}%</text>
-          {% endif %}
-        {% endif %}
-      {% endfor %}
-
-      {% comment %} Temperature line {% endcomment %}
-      <polyline fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" points="{% for h in hourly %}{% assign i = forloop.index0 %}{% assign px = i | times: px_per_hour | plus: chart_left | plus: 11 %}{% assign t = h.temp | floor %}{% assign ty = t | minus: min_temp | times: 150 | divided_by: temp_range %}{% assign py = 190 | minus: ty %}{{ px }},{{ py }} {% endfor %}" />
-
-      {% comment %} Temperature labels every 3h {% endcomment %}
-      {% for h in hourly %}
-        {% assign i = forloop.index0 %}
-        {% assign mod3 = forloop.index0 | modulo: 3 %}
-        {% if i == 0 or mod3 == 0 %}
-          {% assign px = i | times: px_per_hour | plus: chart_left | plus: 11 %}
-          {% assign t = h.temp | floor %}
-          {% assign ty = t | minus: min_temp | times: 150 | divided_by: temp_range %}
-          {% assign py = 190 | minus: ty | minus: 8 %}
-          <text x="{{ px }}" y="{{ py }}" text-anchor="middle" style="font-size: 10px; font-weight: 700;">{{ t }}°</text>
-        {% endif %}
-      {% endfor %}
-
-      {% comment %} X-axis with actual hours {% endcomment %}
-      <line x1="{{ chart_left }}" y1="201" x2="700" y2="201" stroke="#000" stroke-width="1" />
-      {% for h in hourly %}
-        {% assign i = forloop.index0 %}
-        {% assign mod3 = i | modulo: 3 %}
-        {% if mod3 == 0 %}
-          {% assign tx = i | times: px_per_hour | plus: chart_left | plus: 11 %}
-          {% assign hour_parts = h.time | split: ":" %}
-          <text x="{{ tx }}" y="218" text-anchor="middle" style="font-size: 10px; font-weight: 600;">{{ hour_parts[0] | plus: 0 }}</text>
-        {% endif %}
-      {% endfor %}
-
-      {% comment %} Legend {% endcomment %}
-      <line x1="20" y1="240" x2="45" y2="240" stroke="#000" stroke-width="3" />
-      <text x="50" y="243" style="font-size: 9px; font-weight: 600;">Temp</text>
-      <rect x="100" y="234" width="12" height="12" fill="none" stroke="#000" stroke-width="1.5" />
-      <text x="116" y="243" style="font-size: 9px; font-weight: 600;">Regen%</text>
-      <rect x="180" y="234" width="12" height="12" fill="url(#dots)" opacity="0.5" />
-      <text x="196" y="243" style="font-size: 9px; font-weight: 600;">Kita</text>
-    </svg>
-    {% endif %}
+  <div class="title_bar">
+    <span class="title">Wetter Koeln</span>
+    <span class="instance">{{ updated_at | date: "%H:%M" }}</span>
   </div>
-
-  {% endif %}
-</div>
-
-<div class="title_bar">
-  <span class="title">Wetter Koeln</span>
-  <span class="instance">{{ updated_at | date: "%H:%M" }}</span>
 </div>
