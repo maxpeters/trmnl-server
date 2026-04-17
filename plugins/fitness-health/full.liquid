@@ -7,43 +7,51 @@
   </div>
   {% else %}
 
-  {% assign has_steps = daily.steps != nil %}
-  {% assign has_active_calories = daily.active_calories != nil %}
-  {% assign has_resting_hr = daily.resting_hr != nil %}
-  {% assign has_min_hr = daily.min_hr != nil %}
-  {% assign has_max_hr = daily.max_hr != nil %}
-  {% assign has_any_hr = has_resting_hr or has_min_hr or has_max_hr %}
+  {% assign has_steps = false %}
+  {% if daily.steps != nil %}{% assign has_steps = true %}{% endif %}
+  {% assign has_active_calories = false %}
+  {% if daily.active_calories != nil %}{% assign has_active_calories = true %}{% endif %}
+  {% assign has_resting_hr = false %}
+  {% if daily.resting_hr != nil %}{% assign has_resting_hr = true %}{% endif %}
+  {% assign has_min_hr = false %}
+  {% if daily.min_hr != nil %}{% assign has_min_hr = true %}{% endif %}
+  {% assign has_max_hr = false %}
+  {% if daily.max_hr != nil %}{% assign has_max_hr = true %}{% endif %}
+  {% assign has_any_hr = false %}
+  {% if has_resting_hr or has_min_hr or has_max_hr %}{% assign has_any_hr = true %}{% endif %}
 
-  <!-- Top row: Steps + Calories + HR -->
-  <div class="flex flex--row flex--between flex--center-y" style="margin-bottom: 8px;">
-    <div class="flex flex--row flex--center-y gap--medium">
-      <div>
-        <div style="font-size: 40px; font-weight: 700; line-height: 1; color: {% if has_steps and daily.steps < 5000 %}red{% else %}#000{% endif %};">{{ daily.steps | default: "--" }}</div>
-        <div style="font-size: 14px; font-weight: 600; color: {% if has_steps and daily.steps < 5000 %}red{% else %}#000{% endif %};">Schritte / {{ daily.distance_km | default: "0" }} km</div>
-      </div>
-      <div style="border-left: 2px solid #000; padding-left: 12px;">
-        <div style="font-size: 36px; font-weight: 700; line-height: 1; color: #000;">{% if has_active_calories %}{{ daily.active_calories | floor }}{% else %}--{% endif %}</div>
-        <div style="font-size: 13px; font-weight: 700; color: #000;">kcal aktiv</div>
-      </div>
+  <div class="flex flex--row" style="gap: 14px; margin-bottom: 8px;">
+    <div style="width: 170px;">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #000;">HEUTE</div>
+      <div style="font-size: 44px; font-weight: 700; line-height: 1; color: {% if has_steps and daily.steps < 5000 %}red{% else %}#000{% endif %}; margin-top: 4px;">{{ daily.steps | default: "--" }}</div>
+      <div style="font-size: 14px; font-weight: 600; color: #000; margin-top: 2px;">Schritte{% if daily.distance_km != nil %} · {{ daily.distance_km }} km{% endif %}</div>
+      <div style="font-size: 14px; font-weight: 600; color: #000; margin-top: 2px;">Aktiv {% if has_active_calories %}{{ daily.active_calories | floor }}{% else %}--{% endif %} kcal</div>
     </div>
-    <div class="flex flex--row gap--medium" style="font-size: 13px; font-weight: 600; color: #000;">
+
+    <div style="flex: 1; border-left: 2px solid #000; padding-left: 14px;">
+      <div style="font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #000;">HERZFREQUENZ</div>
       {% if has_any_hr %}
-      <div style="text-align: center;">
-        <div style="font-size: 24px; font-weight: 700;">{{ daily.resting_hr | default: "--" }}</div>
-        <div>Ruhe</div>
-      </div>
-      <div style="text-align: center;">
-        <div style="font-size: 24px; font-weight: 700;">{{ daily.min_hr | default: "--" }}</div>
-        <div>Min</div>
-      </div>
-      <div style="text-align: center;">
-        <div style="font-size: 24px; font-weight: 700;">{{ daily.max_hr | default: "--" }}</div>
-        <div>Max</div>
+      <div class="flex flex--row gap--medium" style="margin-top: 8px;">
+        <div style="text-align: center; min-width: 56px;">
+          <div style="font-size: 28px; font-weight: 700; color: #000;">{{ daily.resting_hr | default: "--" }}</div>
+          <div style="font-size: 11px; font-weight: 600; color: #000;">Ruhe</div>
+        </div>
+        <div style="text-align: center; min-width: 56px;">
+          <div style="font-size: 28px; font-weight: 700; color: #000;">{{ daily.min_hr | default: "--" }}</div>
+          <div style="font-size: 11px; font-weight: 600; color: #000;">Min</div>
+        </div>
+        <div style="text-align: center; min-width: 56px;">
+          <div style="font-size: 28px; font-weight: 700; color: #000;">{{ daily.max_hr | default: "--" }}</div>
+          <div style="font-size: 11px; font-weight: 600; color: #000;">Max</div>
+        </div>
       </div>
       {% else %}
-      <div style="text-align: right;">
-        <div style="font-size: 16px; font-weight: 700; color: #000;">Herzfrequenz</div>
-        <div style="font-size: 13px; font-weight: 600; color: #666;">Heute noch keine Tageswerte</div>
+      <div style="font-size: 18px; font-weight: 700; color: #000; margin-top: 10px;">Keine Tageswerte</div>
+      <div style="font-size: 13px; font-weight: 600; color: #666; margin-top: 2px;">Workout-Daten sind da, Tages-HF heute noch nicht.</div>
+      {% endif %}
+      {% if hr_zones %}
+      <div style="font-size: 12px; font-weight: 600; color: #000; margin-top: 10px; border-top: 1px solid #000; padding-top: 4px;">
+        Zone 2: {{ hr_zones.zone2_low }}-{{ hr_zones.zone2_high }} bpm
       </div>
       {% endif %}
     </div>
@@ -51,12 +59,10 @@
 
   <div class="divider"></div>
 
-  <!-- Bottom: Workout + Week side by side -->
-  <div class="flex flex--row" style="margin-top: 8px;">
-
-    {% if last_activity %}
+  <div class="flex flex--row" style="margin-top: 8px; gap: 14px;">
     <div class="flex flex--col" style="flex: 1;">
       <div style="font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #000;">LETZTES WORKOUT</div>
+      {% if last_activity %}
       <div style="font-size: 24px; font-weight: 700; color: #000; margin-top: 4px;">{{ last_activity.name }}</div>
       <div style="font-size: 15px; font-weight: 600; color: #000; margin-top: 4px;">
         {{ last_activity.duration_min }} min
@@ -69,35 +75,33 @@
       <div style="font-size: 12px; font-weight: 600; color: #000; margin-top: 2px;">
         {{ last_activity.start_time | truncate: 16, "" }}
       </div>
+      {% else %}
+      <div style="font-size: 18px; font-weight: 700; color: #000; margin-top: 8px;">Kein Workout</div>
+      <div style="font-size: 13px; font-weight: 600; color: #666; margin-top: 2px;">Heute wurde noch keine Aktivität erkannt.</div>
+      {% endif %}
     </div>
-    {% endif %}
 
-    <div class="flex flex--col" style="border-left: 2px solid #000; padding-left: 16px; flex: 1;">
+    <div class="flex flex--col" style="border-left: 2px solid #000; padding-left: 14px; width: 220px;">
       <div style="font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #000;">WOCHE</div>
       {% if week_summary %}
       <div class="flex flex--row gap--medium" style="margin-top: 8px;">
-        <div style="text-align: center;">
+        <div style="text-align: center; min-width: 54px;">
           <div style="font-size: 32px; font-weight: 700; color: #000;">{{ week_summary.activities_count }}</div>
           <div style="font-size: 11px; font-weight: 600; color: #000;">Workouts</div>
         </div>
-        <div style="text-align: center;">
+        <div style="text-align: center; min-width: 54px;">
           <div style="font-size: 32px; font-weight: 700; color: #000;">{{ week_summary.total_duration_min }}</div>
-          <div style="font-size: 11px; font-weight: 600; color: #000;">Minuten</div>
+          <div style="font-size: 11px; font-weight: 600; color: #000;">Min</div>
         </div>
-        <div style="text-align: center;">
+        <div style="text-align: center; min-width: 54px;">
           <div style="font-size: 32px; font-weight: 700; color: {% if week_summary.zone2_minutes < 60 %}red{% else %}#000{% endif %};">{{ week_summary.zone2_minutes }}</div>
-          <div style="font-size: 11px; font-weight: 600; color: {% if week_summary.zone2_minutes < 60 %}red{% else %}#000{% endif %};">Z2 min</div>
+          <div style="font-size: 11px; font-weight: 600; color: {% if week_summary.zone2_minutes < 60 %}red{% else %}#000{% endif %};">Z2</div>
         </div>
       </div>
-      {% endif %}
-
-      {% if hr_zones %}
-      <div style="margin-top: auto; font-size: 12px; font-weight: 600; color: #000; border-top: 1px solid #000; padding-top: 4px;">
-        Z2: {{ hr_zones.zone2_low }}-{{ hr_zones.zone2_high }} bpm
-      </div>
+      {% else %}
+      <div style="font-size: 18px; font-weight: 700; color: #000; margin-top: 8px;">Keine Wochenwerte</div>
       {% endif %}
     </div>
-
   </div>
 
   {% endif %}
