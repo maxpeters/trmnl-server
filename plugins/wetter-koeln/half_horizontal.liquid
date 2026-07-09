@@ -35,49 +35,85 @@
     {% assign temp_range = max_temp | minus: min_temp %}
     {% if temp_range == 0 %}{% assign temp_range = 1 %}{% endif %}
 
-    {% assign first_time = hourly[0].time | split: ":" %}
-    {% assign start_hour = first_time[0] | plus: 0 %}
-    {% assign px_per_hour = 29 %}
-
-    <svg viewBox="0 0 700 200" style="width: 100%; height: 100%; display: block;">
+    <svg viewBox="0 0 700 180" style="width: 100%; height: 100%; display: block;">
+      {% comment %} Rain bars - positioned by actual hour {% endcomment %}
       {% for h in hourly %}
-        {% assign i = forloop.index0 %}
-        {% assign bx = i | times: px_per_hour | plus: 10 %}
-        {% assign bh = h.precipitation_prob | times: 80 | divided_by: 100 %}
-        {% assign by = 160 | minus: bh %}
+        {% assign hparts = h.time | split: ":" %}
+        {% assign hval = hparts[0] | plus: 0 %}
+        {% assign bx = hval | times: 28 | plus: 10 %}
         {% if h.precipitation_prob > 5 %}
+          {% assign bh = h.precipitation_prob | times: 80 | divided_by: 100 %}
+          {% assign by = 140 | minus: bh %}
           {% if h.precipitation_prob > 50 %}
-          <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="none" stroke="red" stroke-width="2" />
+          <rect x="{{ bx }}" y="{{ by }}" width="20" height="{{ bh }}" fill="none" stroke="red" stroke-width="2" />
           {% else %}
-          <rect x="{{ bx }}" y="{{ by }}" width="22" height="{{ bh }}" fill="none" stroke="red" stroke-width="1.5" />
+          <rect x="{{ bx }}" y="{{ by }}" width="20" height="{{ bh }}" fill="none" stroke="red" stroke-width="1.5" />
+          {% endif %}
+          {% if h.precipitation_prob > 40 %}
+            {% assign lx = bx | plus: 10 %}
+            <text x="{{ lx }}" y="{{ by | minus: 2 }}" text-anchor="middle" style="font-size: 8px; font-weight: 700;">{{ h.precipitation_prob }}%</text>
           {% endif %}
         {% endif %}
       {% endfor %}
 
-      <polyline fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" points="{% for h in hourly %}{% assign i = forloop.index0 %}{% assign px = i | times: px_per_hour | plus: 21 %}{% assign t = h.temp | floor %}{% assign ty = t | minus: min_temp | times: 120 | divided_by: temp_range %}{% assign py = 150 | minus: ty %}{{ px }},{{ py }} {% endfor %}" />
+      {% comment %} Temperature line - sorted by hour 0-23 {% endcomment %}
+      {% assign temp_points = "" %}
+      {% for hour_slot in (0..23) %}
+        {% for h in hourly %}
+          {% assign hparts = h.time | split: ":" %}
+          {% assign hval = hparts[0] | plus: 0 %}
+          {% if hval == hour_slot %}
+            {% assign px = hval | times: 28 | plus: 21 %}
+            {% assign t = h.temp | floor %}
+            {% assign ty = t | minus: min_temp | times: 100 | divided_by: temp_range %}
+            {% assign py = 135 | minus: ty %}
+            {% capture temp_points %}{{ temp_points }}{{ px }},{{ py }} {% endcapture %}
+            {% break %}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+      <polyline fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="{{ temp_points }}" />
 
+      {% comment %} Temperature labels every 3h {% endcomment %}
       {% for h in hourly %}
-        {% assign i = forloop.index0 %}
-        {% assign mod4 = i | modulo: 4 %}
-        {% if mod4 == 0 %}
-          {% assign px = i | times: px_per_hour | plus: 21 %}
+        {% assign hparts = h.time | split: ":" %}
+        {% assign hval = hparts[0] | plus: 0 %}
+        {% assign mod3 = hval | modulo: 3 %}
+        {% if mod3 == 0 %}
+          {% assign px = hval | times: 28 | plus: 21 %}
           {% assign t = h.temp | floor %}
-          {% assign ty = t | minus: min_temp | times: 120 | divided_by: temp_range %}
-          {% assign py = 150 | minus: ty | minus: 7 %}
+          {% assign ty = t | minus: min_temp | times: 100 | divided_by: temp_range %}
+          {% assign py = 135 | minus: ty | minus: 7 %}
           <text x="{{ px }}" y="{{ py }}" text-anchor="middle" style="font-size: 9px; font-weight: 700;">{{ t }}°</text>
         {% endif %}
       {% endfor %}
 
-      <line x1="10" y1="161" x2="700" y2="161" stroke="#000" stroke-width="1" />
-      {% for h in hourly %}
-        {% assign i = forloop.index0 %}
-        {% assign mod4 = i | modulo: 4 %}
-        {% if mod4 == 0 %}
-          {% assign tx = i | times: px_per_hour | plus: 21 %}
-          {% assign hour_parts = h.time | split: ":" %}
-          <text x="{{ tx }}" y="176" text-anchor="middle" style="font-size: 9px; font-weight: 600;">{{ hour_parts[0] | plus: 0 }}</text>
+      {% comment %} NOW marker {% endcomment %}
+      {% assign current_local_timestamp = trmnl.system.timestamp_utc %}
+      {% assign current_hour = current_local_timestamp | date: '%H' | plus: 0 %}
+      {% assign now_x = current_hour | times: 28 | plus: 10 %}
+      <line x1="{{ now_x }}" y1="10" x2="{{ now_x }}" y2="140" stroke="#fff" stroke-width="6" />
+      <line x1="{{ now_x }}" y1="10" x2="{{ now_x }}" y2="140" stroke="red" stroke-width="2" stroke-dasharray="4,3" />
+
+      {% comment %} X-axis: fixed 0-24h {% endcomment %}
+      <line x1="10" y1="141" x2="690" y2="141" stroke="#000" stroke-width="1" />
+      {% for hour in (0..24) %}
+        {% assign tx = hour | times: 28 | plus: 10 %}
+        {% if hour == 24 %}{% assign tx = 690 %}{% endif %}
+        {% assign hour_mod = hour | modulo: 3 %}
+        {% if hour_mod == 0 %}
+          <line x1="{{ tx }}" y1="141" x2="{{ tx }}" y2="147" stroke="#000" stroke-width="1" />
+          <text x="{{ tx }}" y="160" text-anchor="middle" style="font-size: 9px; font-weight: 600;">{{ hour }}</text>
+        {% else %}
+          <line x1="{{ tx }}" y1="141" x2="{{ tx }}" y2="145" stroke="#000" stroke-width="0.8" />
         {% endif %}
       {% endfor %}
+
+      {% comment %} Legend {% endcomment %}
+      <line x1="20" y1="175" x2="45" y2="175" stroke="#000" stroke-width="3" />
+      <text x="50" y="178" style="font-size: 8px; font-weight: 600;">Temp</text>
+      <rect x="100" y="170" width="10" height="10" fill="none" stroke="red" stroke-width="1.5" />
+      <text x="114" y="178" style="font-size: 8px; font-weight: 600;">Regen%</text>
     </svg>
     {% endif %}
   </div>
@@ -86,7 +122,15 @@
 </div>
 
 <div class="title_bar">
-  <span class="title">Wetter</span>
-  <span class="instance">{{ updated_at | date: "%H:%M" }}</span>
+  <span class="title"><strong>Köln</strong></span>
+  <span class="instance">
+    {% assign footer_timestamp = nil %}
+    {% if meta and meta.cached_at %}
+      {% assign footer_timestamp = meta.cached_at | date: '%s' %}
+    {% endif %}
+    {% if footer_timestamp %}
+      {{ footer_timestamp | date: "%H:%M" }}
+    {% endif %}
+  </span>
 </div>
 </div>
