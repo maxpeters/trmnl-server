@@ -66,8 +66,7 @@
     {% assign axis_x2 = data_end_hour | minus: 7 | times: 25 | plus: 10 %}
 
     {% comment %} Current time for now-marker {% endcomment %}
-    {% assign now_timestamp = trmnl.system.timestamp_utc | plus: trmnl.user.utc_offset %}
-    {% assign now_hour = now_timestamp | date: '%H' | plus: 0 %}
+    {% assign now_hour = trmnl.system.local_hour | plus: 0 %}
 
     <svg viewBox="-30 0 470 280" style="width:100%;height:100%;display:block;">
       <defs>
@@ -141,6 +140,6 @@
 
   <div class="title_bar">
     <span class="title">AI Fitness</span>
-    <span class="instance">{{ updated_at | date: "%H:%M" }}</span>
+    <span class="instance">{{ trmnl.system.local_time }}</span>
   </div>
 </div>

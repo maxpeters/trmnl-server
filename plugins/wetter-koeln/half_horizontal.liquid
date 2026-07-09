@@ -89,8 +89,7 @@
       {% endfor %}
 
       {% comment %} NOW marker {% endcomment %}
-      {% assign current_local_timestamp = trmnl.system.timestamp_utc %}
-      {% assign current_hour = current_local_timestamp | date: '%H' | plus: 0 %}
+      {% assign current_hour = trmnl.system.local_hour | plus: 0 %}
       {% assign now_x = current_hour | times: 28 | plus: 10 %}
       <line x1="{{ now_x }}" y1="10" x2="{{ now_x }}" y2="140" stroke="#fff" stroke-width="6" />
       <line x1="{{ now_x }}" y1="10" x2="{{ now_x }}" y2="140" stroke="red" stroke-width="2" stroke-dasharray="4,3" />
@@ -123,14 +122,6 @@
 
 <div class="title_bar">
   <span class="title"><strong>Köln</strong></span>
-  <span class="instance">
-    {% assign footer_timestamp = nil %}
-    {% if meta and meta.cached_at %}
-      {% assign footer_timestamp = meta.cached_at | date: '%s' %}
-    {% endif %}
-    {% if footer_timestamp %}
-      {{ footer_timestamp | date: "%H:%M" }}
-    {% endif %}
-  </span>
+  <span class="instance">{{ trmnl.system.local_time }}</span>
 </div>
 </div>

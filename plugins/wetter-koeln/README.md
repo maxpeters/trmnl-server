@@ -45,4 +45,4 @@ Current weather, 24h temperature/rain forecast chart with Kita drop-off/pickup t
 
 - Kita times (Bring 7:30-9:30, Abhol 13:30-16:30) are hardcoded in full template.
 - Rain probability > 50% renders in red (warning accent).
-- Now marker uses TRMNL render timezone context instead of a fixed UTC offset hack.
+- Now marker and footer use `trmnl.system.local_hour` / `trmnl.system.local_time`; templates must not add `utc_offset` to `timestamp_utc`.

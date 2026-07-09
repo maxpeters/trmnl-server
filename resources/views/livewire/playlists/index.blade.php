@@ -306,7 +306,7 @@ new class extends Component
                                             </div>
 
                                             <div class="mb-4">
-                                                <flux:input type="number" label="Refresh Time (seconds)" wire:model="refresh_time" min="1" placeholder="Leave empty to use device default"/>
+                                                <flux:input type="number" label="Playlist Refresh Time (seconds)" wire:model="refresh_time" min="1" placeholder="Leave empty to use device default"/>
                                             </div>
 
                                             <div class="flex">

@@ -93,6 +93,12 @@ Das Script:
 
 Das ist kein vollautomatischer Device-E2E-Test, aber ein sehr naher visueller Server-Render-Test fuer Plugin-Entwicklung.
 
+### Refresh-Intervalle
+
+- `Default Refresh Interval` am Device ist der Fallback fuer `/api/display`.
+- Eine aktive Playlist mit gesetztem `Playlist Refresh Time` ueberschreibt den Device-Default.
+- Zum Debuggen zaehlt der Wert im `/api/display` JSON: `refresh_rate` ist genau die Schlafzeit, die die Firmware speichert.
+
 ## Firmware
 
 Siehe [usetrmnl/firmware](https://github.com/usetrmnl/firmware) mit Patches fuer unser 3-Farben Waveshare Panel. Details zu Pin-Mapping, Treiber-Patches und Flashing in der Firmware-Dokumentation.

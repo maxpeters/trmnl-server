@@ -732,6 +732,26 @@ test('plugin render includes utc_offset and time_zone_iana in trmnl.user context
         ->and($rendered)->toMatch('/\|-?\d+/'); // Should contain a pipe followed by a number (offset in seconds)
 });
 
+test('plugin render exposes local system time in user timezone', function (): void {
+    Carbon::setTestNow(Carbon::parse('2026-07-09 15:45:00', 'UTC'));
+
+    $user = User::factory()->create([
+        'timezone' => 'Europe/Berlin',
+    ]);
+
+    $plugin = Plugin::factory()->create([
+        'user_id' => $user->id,
+        'markup_language' => 'liquid',
+        'render_markup' => '{{ trmnl.system.timestamp_utc }}|{{ trmnl.system.local_hour }}|{{ trmnl.system.local_time }}|{{ trmnl.user.utc_offset }}',
+    ]);
+
+    $rendered = $plugin->render();
+
+    expect($rendered)->toContain('1783611900|17|17:45|7200');
+
+    Carbon::setTestNow();
+});
+
 /**
  * Plugin security: XSS Payload Dataset
  * [Input, Expected Result, Forbidden String]

@@ -505,10 +505,12 @@ class Plugin extends Model
 
             if ($this->markup_language === 'liquid') {
                 // Get timezone from user or fall back to app timezone
-                $timezone = $this->user->timezone ?? config('app.timezone');
+                $timezone = $this->user?->timezone ?? $device?->user?->timezone ?? config('app.timezone');
+                $now = now();
+                $localNow = $now->copy()->timezone($timezone);
 
                 // Calculate UTC offset in seconds
-                $utcOffset = (string) Carbon::now($timezone)->getOffset();
+                $utcOffset = (string) $localNow->getOffset();
 
                 // Build render context
                 $context = [
@@ -518,7 +520,10 @@ class Plugin extends Model
                     ...(is_array($this->data_payload) ? $this->data_payload : []),
                     'trmnl' => [
                         'system' => [
-                            'timestamp_utc' => now()->utc()->timestamp,
+                            'timestamp_utc' => $now->copy()->utc()->timestamp,
+                            'local_time' => $localNow->format('H:i'),
+                            'local_hour' => (int) $localNow->format('G'),
+                            'local_minute' => (int) $localNow->format('i'),
                         ],
                         'user' => [
                             'utc_offset' => $utcOffset,
@@ -583,10 +588,12 @@ class Plugin extends Model
                 }
             } else {
                 // Get timezone from user or fall back to app timezone
-                $timezone = $this->user->timezone ?? config('app.timezone');
+                $timezone = $this->user?->timezone ?? $device?->user?->timezone ?? config('app.timezone');
+                $now = now();
+                $localNow = $now->copy()->timezone($timezone);
 
                 // Calculate UTC offset in seconds
-                $utcOffset = (string) Carbon::now($timezone)->getOffset();
+                $utcOffset = (string) $localNow->getOffset();
 
                 $renderedContent = Blade::render($markup, [
                     'size' => $size,
@@ -594,7 +601,10 @@ class Plugin extends Model
                     'config' => $this->configuration ?? [],
                     'trmnl' => [
                         'system' => [
-                            'timestamp_utc' => now()->utc()->timestamp,
+                            'timestamp_utc' => $now->copy()->utc()->timestamp,
+                            'local_time' => $localNow->format('H:i'),
+                            'local_hour' => (int) $localNow->format('G'),
+                            'local_minute' => (int) $localNow->format('i'),
                         ],
                         'user' => [
                             'utc_offset' => $utcOffset,
