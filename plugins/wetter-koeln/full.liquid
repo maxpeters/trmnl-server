@@ -1,6 +1,17 @@
 <div class="view view--full">
   <div class="layout layout--col" style="align-items: stretch; padding: 10px 16px;">
 
+    {% if IDX_0 %}
+      {% assign available = IDX_0.available %}
+      {% assign current = IDX_0.current %}
+      {% assign daily = IDX_0.daily %}
+      {% assign hourly = IDX_0.hourly %}
+      {% assign meta = IDX_0.meta %}
+    {% endif %}
+    {% if IDX_1 and IDX_1.available %}
+      {% assign plants = IDX_1.plants %}
+    {% endif %}
+
     {% if available == false %}
     <div style="display: flex; justify-content: center; align-items: center; flex: 1;">
       <div style="font-size: 24px; font-weight: 700;">Keine Wetter-Daten</div>
@@ -10,7 +21,7 @@
     <!-- Top: Current -->
     <div class="flex flex--row flex--between flex--center-y" style="margin-bottom: 4px;">
       <div class="flex flex--row flex--center-y gap--small">
-        <div style="font-size: 36px; font-weight: 700; line-height: 1;">{{ current.temp | floor }}°</div>
+        <div style="font-size: 58px; font-weight: 700; line-height: 1;">{{ current.temp | floor }}°</div>
         <div style="font-size: 13px; font-weight: 600;">
           <div>{{ current.description }}</div>
           <div>{{ daily.today.min | floor }}° / {{ daily.today.max | floor }}° · {% if daily.today.precipitation_prob > 50 %}<span style="color: red; font-weight: 700;">{{ daily.today.precipitation_prob }}%</span>{% else %}{{ daily.today.precipitation_prob }}%{% endif %}</div>
@@ -135,6 +146,29 @@
       </svg>
       {% endif %}
     </div>
+
+    {% if plants and plants.size > 0 %}
+    <div class="flex flex--row flex--between flex--center-y" style="border-top: 1px solid #000; padding-top: 5px; margin-top: 3px;">
+      {% for p in plants %}
+        {% assign pname = p.name | split: " " | last %}
+        <div class="flex flex--row flex--center-y" style="gap: 7px;">
+          <span style="font-size: 14px; font-weight: 600;">{{ pname }}</span>
+          {% if p.status == "dry" %}
+            <span style="font-size: 22px; font-weight: 700; line-height: 1; color: red;">{{ p.moisture }}%</span>
+            <span style="font-size: 11px; font-weight: 700; color: red;">giessen!</span>
+          {% elsif p.status == "low" %}
+            <span style="font-size: 22px; font-weight: 700; line-height: 1; color: red;">{{ p.moisture }}%</span>
+            <span style="font-size: 11px; font-weight: 700;">bald giessen</span>
+          {% else %}
+            <span style="font-size: 22px; font-weight: 700; line-height: 1;">{{ p.moisture }}%</span>
+            {% if p.days_until_dry %}
+              <span style="font-size: 11px; font-weight: 600;">~{{ p.days_until_dry }}d</span>
+            {% endif %}
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    {% endif %}
 
     {% endif %}
   </div>

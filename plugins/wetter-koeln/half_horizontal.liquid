@@ -1,6 +1,15 @@
 <div class="view view--half_horizontal">
 <div class="layout layout--row" style="padding: 6px 10px; align-items: stretch; justify-content: flex-start;">
 
+  {% if IDX_0 %}
+    {% assign available = IDX_0.available %}
+    {% assign current = IDX_0.current %}
+    {% assign daily = IDX_0.daily %}
+    {% assign hourly = IDX_0.hourly %}
+    {% assign bike_forecast = IDX_0.bike_forecast %}
+    {% assign meta = IDX_0.meta %}
+  {% endif %}
+
   {% if available == false %}
   <div class="flex flex--center-x flex--center-y grow">
     <div style="font-size: 18px; font-weight: 700;">Keine Wetter-Daten</div>
