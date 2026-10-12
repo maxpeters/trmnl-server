@@ -49,5 +49,5 @@ else
   log "repository has local changes; skipping pull"
 fi
 
-log "starting docker compose stack"
-exec docker compose up
+log "building and starting docker compose stack"
+exec docker compose up --build
